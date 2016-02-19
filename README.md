@@ -7,8 +7,8 @@ Checkout the Bing Ads full [documentation][bingDocumentation]
 **Warning: Currently in development**
 
 **TODO**
-- get new Tokens via GUZZLE
 - Create more Reports
+- Write tests
 
 
 Installation
@@ -39,7 +39,7 @@ Configuration
 ```yaml
 # app/config/config.yml
 
-# Bing adds API
+# Bing ads API
 werkspot_bing_ads_api:
   api_client_id: "%bing_ads_api_client_id%" #<-- Keep them save! (in parameters.yml)
   api_secret: "%bing_ads_api_client_secret%" #<-- Keep them save! (in parameters.yml)
