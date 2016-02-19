@@ -1,0 +1,37 @@
+{
+  "name": "werkspot/bing-ads-api-bundle",
+  "type":        "symfony-bundle",
+  "description": "A service to make API calls to bing ads in Symfony",
+  "keywords":    ["bing ads", "api", "service", "bundle"],
+  "homepage":    "http://werkspot.nl",
+  "license":     "MIT",
+
+  "authors": [
+    {
+      "name": "Laurens Laman",
+      "homepage": "http://werkspot.nl"
+    },
+    {
+      "name": "Winfred Peereboom",
+      "homepage": "http://werkspot.nl"
+    }
+  ],
+  "repositories":
+  [
+    {
+      "type": "vcs",
+      "url": "https://github.com/onema/bing-ads-sdk-php"
+    }
+  ],
+  "require": {
+    "php":                      ">=5.3.2",
+    "symfony/framework-bundle": "~2.3|~3.0",
+    "cpcstrategy/bing-ads-sdk-php": "~2.0",
+    "guzzle/guzzle": "^3.9"
+  },
+  "autoload": {
+    "psr-4" : {
+      "Werkspot\\BingAdsApiBundle\\" : ""
+    }
+  }
+}
