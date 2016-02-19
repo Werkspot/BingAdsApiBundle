@@ -322,19 +322,6 @@ class Client
     }
 
     /**
-     * handshake
-     *
-     * Get the AccessToken based on the user cedentials
-     *
-     * @return self
-     */
-    private function handshake()
-    {
-        return $this;
-    }
-
-
-    /**
      * Clear Bundle Cache directory
      *
      * @param bool $allFiles delete all files in bundles cache, if false deletes only extracted files ($this->files)
