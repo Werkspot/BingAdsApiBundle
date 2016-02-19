@@ -31,7 +31,7 @@ public function registerBundles()
 {
     $bundles = [
         //...
-        new Werkspot\OdrBundle\WerkspotBingAdsApiBundle(),
+        new Werkspot\BingAdsApiBundle\WerkspotBingAdsApiBundle(),
         //...
 ```
 Configuration
