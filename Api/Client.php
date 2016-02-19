@@ -8,6 +8,7 @@ use BingAds\Reporting\SubmitGenerateReportRequest;
 use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Proxy\ClientProxy;
 use SoapVar;
+use Werkspot\BingAdsApiBundle\Api\Report\ReportInterface;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class Client
@@ -62,7 +63,7 @@ class Client
         $this->fileName = "report.zip";
 
         $this->report = [
-            'GeoLocationPerformanceReportRequest' => new Report\GeoLocationPerformanceReport(),
+            'GeoLocationPerformanceReport' => new Report\GeoLocationPerformanceReport(),
         ];
 
     }
@@ -86,7 +87,7 @@ class Client
      *
      * @return array|string
      */
-    public function get(array $columns, $name = 'GeoLocationPerformanceReportRequest', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
+    public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
         $accessToken = $this->requestNewAccessToken->get(
             $this->config['api_client_id'],
@@ -141,7 +142,7 @@ class Client
      * @param $downloadFile
      *
      * @return string
-     *
+     *§
      * @throws \Exception
      */
     private function getFilesFromReportRequest($reportRequest, $name, $downloadFile)
@@ -162,7 +163,8 @@ class Client
      * to request the report identifier. The identifier is used to check report generation status
      * before downloading the report.
      *
-     * @param $report
+     * @param mixed  $report
+     * @param string $name
      *
      * @return string ReportRequestId
      */
@@ -176,13 +178,14 @@ class Client
 
     /**
      *
-     * @param $report
-     * @param $name
+     * @param mixed  $report
+     * @param string $name
      *
      * @return SoapVar
      */
     private function getReportRequest($report, $name)
     {
+        $name = "{$name}Request";
         return new  SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
     }
 

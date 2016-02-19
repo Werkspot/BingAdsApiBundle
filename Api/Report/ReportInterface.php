@@ -4,12 +4,13 @@ namespace Werkspot\BingAdsApiBundle\Api\Report;
 
 interface ReportInterface
 {
+
     /**
      *
-     * @param $columns
-     * @param $timePeriod
+     * @param array   $columns
+     * @param string  $timePeriod
      *
-     * @return GeoLocationPerformanceReportRequest
+     * @return ReportRequest
      */
-    public function getRequest($columns, $timePeriod);
+    public function getRequest(array $columns, $timePeriod);
 }

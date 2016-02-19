@@ -5,31 +5,41 @@ namespace Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Reporting\NonHourlyReportAggregation;
 use BingAds\Reporting\GeoLocationPerformanceReportRequest;
-use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\AccountThroughAdGroupReportScope;
+use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
 
-class GeoLocationPerformanceReport implements ReportInterface
+class GeoLocationPerformanceReport extends BaseReport implements ReportInterface
 {
     const NAME = 'GeoLocationPerformanceReportRequest';
-    const WSDL = 'https://api.bingads.microsoft.com/Api/Advertiser/Reporting/V9/ReportingService.svc?singleWsdl';
+
+    protected function createReportRequest()
+    {
+        $this->reportRequest = new GeoLocationPerformanceReportRequest();
+        $this->reportRequest->Format = ReportFormat::Csv;
+        $this->reportRequest->ReportName = self::NAME;
+        $this->reportRequest->ReturnOnlyCompleteData = true;
+        $this->reportRequest->Aggregation = NonHourlyReportAggregation::Daily;
+        $this->reportRequest->Scope = new AccountThroughAdGroupReportScope();
+        $this->reportRequest->Time = new ReportTime();
+    }
 
     /**
      * {@inheritdoc}
      */
-    public function getRequest($columns, $timePeriod)
+    public function getRequest(array $columns, $timePeriod)
     {
-        $reportRequest = new GeoLocationPerformanceReportRequest();
+        $this->reportRequest->Time->PredefinedTime = $timePeriod;
+        $this->reportRequest->Columns = $columns;
 
-        $reportRequest->Format = ReportFormat::Csv;
-        $reportRequest->ReportName = self::NAME;
-        $reportRequest->ReturnOnlyCompleteData = true;
-        $reportRequest->Aggregation = NonHourlyReportAggregation::Daily;
-        $reportRequest->Scope = new AccountThroughAdGroupReportScope();
-        $reportRequest->Time = new ReportTime();
-        $reportRequest->Time->PredefinedTime = $timePeriod;
-        $reportRequest->Columns = $columns;
-
-        return $reportRequest;
+        return $this->reportRequest;
     }
+
+    public function setAggregation($aggregation)
+    {
+        $this->reportRequest->Aggregation = $aggregation;
+
+        return $this;
+    }
+
 }
