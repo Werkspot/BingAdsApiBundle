@@ -339,7 +339,7 @@ class Client
                 if (preg_match('/^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/', $column))
                 {
                     $date = \DateTime::createFromFormat('m/d/Y', $column);
-                    $columns[$columnKey] = $date->format('Y/m/d');
+                    $columns[$columnKey] = $date->format('dd-mm-YYYY');
                     $isChanged = true;
                 }
             }
