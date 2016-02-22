@@ -314,8 +314,9 @@ class Client
      */
     private function removeLastLines(array $lines, $noOfLinesToRemove = 1)
     {
-        $removeFrom = count($lines) - $noOfLinesToRemove;
-        $totalLines= count($lines);
+        $totalLines = count($lines);
+        $removeFrom = $totalLines - $noOfLinesToRemove;
+
         for( $i = $removeFrom; $i < $totalLines; $i++ ) {
             unset($lines[$i]);
         }
