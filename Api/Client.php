@@ -315,8 +315,8 @@ class Client
     private function removeLastLines(array $lines, $noOfLinesToRemove = 1)
     {
         $removeFrom = count($lines) - $noOfLinesToRemove;
-
-        for( $i = $removeFrom; $i < count($lines); $i++ ) {
+        $totalLines= count($lines);
+        for( $i = $removeFrom; $i < $totalLines; $i++ ) {
             unset($lines[$i]);
         }
         return $lines;
@@ -339,7 +339,7 @@ class Client
                 if (preg_match('/^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/', $column))
                 {
                     $date = \DateTime::createFromFormat('m/d/Y', $column);
-                    $columns[$columnKey] = $date->format('dd-mm-YYYY');
+                    $columns[$columnKey] = $date->format('Y/m/d');
                     $isChanged = true;
                 }
             }
