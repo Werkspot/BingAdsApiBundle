@@ -14,11 +14,16 @@ class Client
 {
 
     /**
-     * The settings for the api
      *
      * @var array
      */
     private $config = [];
+
+    /**
+     * @var array
+     */
+    private $apiDetails = [];
+
 
     /**
      * @var string
@@ -26,21 +31,18 @@ class Client
     private $fileName;
 
     /**
-     * The refreshToken for the api
      *
      * @var ClientProxy
      */
     private $proxy;
 
     /**
-     * The refreshToken for the api
      *
      * @var string
      */
     public $report;
 
     /**
-     * Array of extracted files
      *
      * @var string
      */
@@ -78,6 +80,22 @@ class Client
         $this->config['cache_dir'] = $this->config['cache_dir'] . '/' . 'BingAdsApiBundle'; //<-- important for the cache clear function
     }
 
+    public function setApiDetails($refreshToken, $clientId, $secret, $redirectUri, $devToken)
+    {
+        $this->apiDetails = [
+            'client_id' => $clientId,
+            'secret' => $secret,
+            'redirect_uri' => $redirectUri,
+            'refresh_token' => $refreshToken,
+            'dev_token' => $devToken,
+        ];
+    }
+
+    public function getRefreshToken()
+    {
+        return $this->apiDetails['refresh_token'];
+    }
+
     /**
      * @param array $columns
      * @param string $name
@@ -88,12 +106,14 @@ class Client
      */
     public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
-        $accessToken = $this->requestNewAccessToken->get(
-            $this->config['api_client_id'],
-            $this->config['api_secret'],
-            $this->config['redirect_uri'],
-            $this->config['refresh_token']
+        $tokens = $this->requestNewAccessToken->get(
+            $this->apiDetails['client_id'],
+            $this->apiDetails['secret'],
+            $this->apiDetails['redirect_uri'],
+            $this->apiDetails['refresh_token']
         );
+        $accessToken = $tokens['access'];
+        $this->apiDetails['refresh_token'] = $tokens['refresh'];
 
         $report = $this->report[$name];
         $reportRequest = $report->getRequest($columns, $timePeriod);
@@ -117,7 +137,7 @@ class Client
      */
     private function setProxy($wsdl, $accessToken)
     {
-        $this->proxy = ClientProxy::ConstructWithCredentials($wsdl, null, null, $this->config['dev_token'], $accessToken);
+        $this->proxy = ClientProxy::ConstructWithCredentials($wsdl, null, null, $this->apiDetails['dev_token'], $accessToken);
     }
 
     /**

@@ -33,8 +33,12 @@ class RequestNewAccessToken
         $response = $request->send();
 
         $json = json_decode($response->getBody(), true);
+        $tokens = [
+            'access' => $json['access_token'],
+            'refresh' => $json['refresh_token'],
+        ];
 
-        return $json['access_token'];
+        return $tokens;
 
     }
 }
