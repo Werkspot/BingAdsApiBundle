@@ -295,7 +295,7 @@ class Client
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
             $lines = file($file);
-            $lines = $this->removeLastLine($lines);
+            $lines = $this->removeLastLines($lines);
             $lines = $this->fixDate($lines);
             $fp = fopen($file, 'w');
             fwrite($fp, implode('', $lines));
@@ -310,12 +310,15 @@ class Client
      * @param array $lines
      * @param int   $noOfLinesToRemove
      *
-     * @return $lines
+     * @return array
      */
-    private function removeLastLine(array $lines, $noOfLinesToRemove = 1)
+    private function removeLastLines(array $lines, $noOfLinesToRemove = 1)
     {
-        $lastLine = count($lines) - $noOfLinesToRemove;
-        unset($lines[$lastLine]);
+        $removeFrom = count($lines) - $noOfLinesToRemove;
+
+        for( $i = $removeFrom; $i < count($lines); $i++ ) {
+            unset($lines[$i]);
+        }
         return $lines;
     }
 
@@ -341,7 +344,7 @@ class Client
                 }
             }
             if ($isChanged){
-                $lines[$key] = $this->arr_csvstr($columns, $separator, $enclosure);
+                $lines[$key] = $this->arrayToCsvLine($columns, $separator, $enclosure);
             }
         }
         return $lines;
@@ -354,7 +357,7 @@ class Client
      *
      * @return string
      */
-    private function arr_csvstr(array $array, $separator = ',', $enclosure = null)
+    private function arrayToCsvLine(array $array, $separator = ',', $enclosure = null)
     {
         $csvStr = "";
 
