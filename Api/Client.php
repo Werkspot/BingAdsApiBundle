@@ -284,7 +284,13 @@ class Client
         return $this;
     }
 
-    private function fixFile($files = null, array $options = null)
+    /**
+     * @param array|null $files
+     * @param array|null $options
+     *
+     * @return self
+     */
+    private function fixFile(array $files = null, array $options = null)
     {
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
@@ -313,6 +319,13 @@ class Client
         return $lines;
     }
 
+    /**
+     * @param array $lines
+     * @param string $separator
+     * @param string $enclosure
+     *
+     * @return array
+     */
     private function fixDate(array $lines, $separator = ',', $enclosure = '"')
     {
         foreach ($lines as $key => $line) {
@@ -320,7 +333,6 @@ class Client
             $isChanged = false;
             foreach ($columns as $columnKey => $column)
             {
-
                 if (preg_match('/^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/', $column))
                 {
                     $date = \DateTime::createFromFormat('m/d/Y', $column);
@@ -335,6 +347,13 @@ class Client
         return $lines;
     }
 
+    /**
+     * @param array $array
+     * @param string $separator
+     * @param null $enclosure
+     *
+     * @return string
+     */
     private function arr_csvstr(array $array, $separator = ',', $enclosure = null)
     {
         $csvStr = "";
