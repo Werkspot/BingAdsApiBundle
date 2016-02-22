@@ -336,7 +336,7 @@ class Client
             $isChanged = false;
             foreach ($columns as $columnKey => $column)
             {
-                if (preg_match('/^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/', $column))
+                if (preg_match('/^([1-9]|1[0-2])\/([1-9]|[1-2][0-9]|3[0-1])\/20[0-9]{2}$/', $column))
                 {
                     $date = \DateTime::createFromFormat('m/d/Y', $column);
                     $columns[$columnKey] = $date->format('Y/m/d');
