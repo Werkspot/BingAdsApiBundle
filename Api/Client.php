@@ -8,7 +8,6 @@ use BingAds\Reporting\SubmitGenerateReportRequest;
 use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Proxy\ClientProxy;
 use SoapVar;
-use Werkspot\BingAdsApiBundle\Api\Report\ReportInterface;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class Client
@@ -142,7 +141,7 @@ class Client
      * @param $downloadFile
      *
      * @return string
-     *§
+     *
      * @throws \Exception
      */
     private function getFilesFromReportRequest($reportRequest, $name, $downloadFile)
@@ -152,7 +151,7 @@ class Client
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
         $zipFile = $this->downloadFile($reportDownloadUrl, $downloadFile);
         $this->openZipFile($zipFile);
-        $this->removeLastLineFromFiles();
+        $this->fixFile();
 
         return $this->files;
     }
@@ -264,7 +263,7 @@ class Client
      *
      * @return array of extracted files
      */
-    private function openZipFile($file, $delete = true)
+    private function openZipFile($file, $delete = false)
     {
         $zipDir = dirname($file);
         $zip = new \ZipArchive();
@@ -285,27 +284,72 @@ class Client
         return $this;
     }
 
-    /**
-     *
-     * @param null $files
-     * @param int $noOfLinesToRemove
-     *
-     * @return self
-     */
-    private function removeLastLineFromFiles($files = null, $noOfLinesToRemove = 1)
+    private function fixFile($files = null, array $options = null)
     {
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
             $lines = file($file);
-            $lastLine = sizeof($lines) - $noOfLinesToRemove;
-            unset($lines[$lastLine]);
-
+            $lines = $this->removeLastLine($lines);
+            $lines = $this->fixDate($lines);
             $fp = fopen($file, 'w');
             fwrite($fp, implode('', $lines));
             fclose($fp);
         }
 
         return $this;
+    }
+
+    /**
+     *
+     * @param array $lines
+     * @param int   $noOfLinesToRemove
+     *
+     * @return $lines
+     */
+    private function removeLastLine(array $lines, $noOfLinesToRemove = 1)
+    {
+        $lastLine = count($lines) - $noOfLinesToRemove;
+        unset($lines[$lastLine]);
+        return $lines;
+    }
+
+    private function fixDate(array $lines, $separator = ',', $enclosure = '"')
+    {
+        foreach ($lines as $key => $line) {
+            $columns = str_getcsv($line, $separator );
+            $isChanged = false;
+            foreach ($columns as $columnKey => $column)
+            {
+
+                if (preg_match('/^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/', $column))
+                {
+                    $date = \DateTime::createFromFormat('m/d/Y', $column);
+                    $columns[$columnKey] = $date->format('Y/m/d');
+                    $isChanged = true;
+                }
+            }
+            if ($isChanged){
+                $lines[$key] = $this->arr_csvstr($columns, $separator, $enclosure);
+            }
+        }
+        return $lines;
+    }
+
+    private function arr_csvstr(array $array, $separator = ',', $enclosure = null)
+    {
+        $csvStr = "";
+
+        for( $i = 0; $i < count($array); $i++ ) {
+
+            if ($enclosure) {
+                $csvStr .= $enclosure . str_replace($enclosure, $enclosure.$enclosure, $array[$i]) . $enclosure;
+            } else {
+                $csvStr .= $array[$i];
+            }
+
+            $csvStr .= ($i < count($array) - 1) ? $separator : "\r\n" ;
+        }
+        return $csvStr;
     }
 
     /**
