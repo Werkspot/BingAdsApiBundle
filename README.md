@@ -41,11 +41,6 @@ Configuration
 
 # Bing ads API
 werkspot_bing_ads_api:
-  api_client_id: "%bing_ads_api_client_id%" #<-- Keep them save! (in parameters.yml)
-  api_secret: "%bing_ads_api_client_secret%" #<-- Keep them save! (in parameters.yml)
-  redirect_uri: "https://example.com/OAuth2Callback.php"
-  dev_token: "%bing_ads_api_dev_token%" #<-- Keep them save! (in parameters.yml)
-  refresh_token: "%bing_ads_api_refresh_token%" #<-- Keep them save! (in parameters.yml)
   cache_dir: "%kernel.cache_dir%" #<-- optional
 ```
 
@@ -79,6 +74,13 @@ $columns = [
 ];
 
 $bingApi = $this->get('werkspot.bing_ads_api_client');
+        $this->bingApi->setApiDetails(
+            $refreshToken,
+            $clientId,
+            $apiSecret,
+            $redirectUri,
+            $devToken
+        );
 $arrayOfFiles = $bingApi->get($columns, $reportType, $timePeriod );
 
 /* [...] Do something with the list */
