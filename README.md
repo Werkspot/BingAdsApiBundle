@@ -74,13 +74,13 @@ $columns = [
 ];
 
 $bingApi = $this->get('werkspot.bing_ads_api_client');
-        $this->bingApi->setApiDetails(
-            $refreshToken,
-            $clientId,
-            $apiSecret,
-            $redirectUri,
-            $devToken
-        );
+$bingApi->setApiDetails(
+    $refreshToken,
+    $clientId,
+    $apiSecret,
+    $redirectUri,
+    $devToken
+);
 $arrayOfFiles = $bingApi->get($columns, $reportType, $timePeriod );
 
 /* [...] Do something with the list */
