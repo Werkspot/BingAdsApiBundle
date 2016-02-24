@@ -34,7 +34,6 @@ class RequestNewAccessToken
         $response = $this->httpClient->request('POST', self::URL, $data);
 
         $json = json_decode($response->getBody(), true);
-
         $tokens = [
             'access' => $json['access_token'],
             'refresh' => $json['refresh_token'],
@@ -43,4 +42,6 @@ class RequestNewAccessToken
         return $tokens;
 
     }
+
+
 }

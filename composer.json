@@ -29,6 +29,9 @@
     "cpcstrategy/bing-ads-sdk-php": "~2.0",
     "guzzlehttp/guzzle": "~6.1"
   },
+  "require-dev": {
+    "mockery/mockery": "~0.9"
+  },
   "autoload": {
     "psr-4" : {
       "Werkspot\\BingAdsApiBundle\\" : ""
