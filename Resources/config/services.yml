@@ -4,7 +4,7 @@ services:
     arguments: ["@werkspot.request_new_access_token"]
 
   guzzle.client:
-    class: Guzzle\Http\Client
+    class: GuzzleHttp\Client
 
   werkspot.request_new_access_token:
     class:  Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken
