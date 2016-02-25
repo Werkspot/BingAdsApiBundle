@@ -211,18 +211,23 @@ class Client
     /**
      *
      * Check if the report is ready for download
-     * if not wait 10 sec and retry (up to 1 hour)
+     * if not wait 10 sec and retry. (up to 6,5 hour)
+     * After 30 tries check every 1 minute
+     * After 34 tries check every 5 minutes
+     * After 39 tries check every 15 minutes
+     * After 43 tries check every 30 minutes
      *
-     * @param string $reportRequestId
-     * @param int $count
-     * @param int $maxCount
-     * @param int $sleep
+     * @param string  $reportRequestId
+     * @param int     $count
+     * @param int     $maxCount
+     * @param int     $sleep
+     * @param boolean $incrementTime
      *
      * @return string
      *
      * @throws \Exception
      */
-    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 360, $sleep = 10)
+    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 48, $sleep = 10, $incrementTime = true)
     {
         if ($count > $maxCount) {
             throw new \Exception("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
@@ -232,7 +237,24 @@ class Client
         if ($reportRequestStatus->Status == "Pending") {
             $count++;
             sleep($sleep);
-            $reportRequestStatus = $this->waitForStatus($reportRequestId, $count, $maxCount, $sleep);
+            if ($incrementTime) {
+                switch ($count) {
+                    case 31:
+                        $sleep = 60;
+                        break;
+                    case 35:
+                        $sleep = 300;
+                        break;
+                    case 40:
+                        $sleep = 900;
+                        break;
+                    case 44:
+                        $sleep = 1800;
+                        break;
+                }
+
+            }
+            $reportRequestStatus = $this->waitForStatus($reportRequestId, $count, $maxCount, $sleep, $incrementTime);
         }
 
         if ($reportRequestStatus->Status == "Error") {
