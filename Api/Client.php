@@ -12,7 +12,6 @@ use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class Client
 {
-
     /**
      *
      * @var array
@@ -239,17 +238,17 @@ class Client
             sleep($sleep);
             if ($incrementTime) {
                 switch ($count) {
-                    case 31:
-                        $sleep = 60;
+                    case 31: // after 5 minutes
+                        $sleep = (1*60);
                         break;
-                    case 35:
-                        $sleep = 300;
+                    case 35: // after 10 minutes
+                        $sleep = (5*60);
                         break;
-                    case 40:
-                        $sleep = 900;
+                    case 40: // after 30 minutes
+                        $sleep = (15*60);
                         break;
-                    case 44:
-                        $sleep = 1800;
+                    case 44: // after 1,5 hours
+                        $sleep = (30*60);
                         break;
                 }
 
