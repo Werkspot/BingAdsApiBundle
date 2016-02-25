@@ -2,7 +2,7 @@
 
 namespace Werkspot\BingAdsApiBundle\Guzzle;
 
-use Guzzle\Http\ClientInterface;
+use GuzzleHttp\ClientInterface;
 
 class RequestNewAccessToken
 {
@@ -19,18 +19,19 @@ class RequestNewAccessToken
 
     public function get($clientId, $clientSecret, $redirectUri, $refreshToken)
     {
-        $headers = [
-            'Content-Type' => 'application/x-www-form-urlencoded'
+        $data = [
+            'headers' => [
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ],
+            'form_params' => [
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+                'grant_type' => self::GRANTTYPE,
+                'redirect_uri' => $redirectUri,
+                'refresh_token' => $refreshToken,
+            ]
         ];
-        $postData = [
-            'client_id' => $clientId,
-            'client_secret' => $clientSecret,
-            'grant_type' => self::GRANTTYPE,
-            'redirect_uri' => $redirectUri,
-            'refresh_token' => $refreshToken,
-        ];
-        $request = $this->httpClient->post(self::URL, $headers, $postData);
-        $response = $request->send();
+        $response = $this->httpClient->request('POST', self::URL, $data);
 
         $json = json_decode($response->getBody(), true);
         $tokens = [
@@ -41,4 +42,6 @@ class RequestNewAccessToken
         return $tokens;
 
     }
+
+
 }
