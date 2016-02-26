@@ -508,7 +508,7 @@ class Client
                     throw new SoapReportingServiceInvalidReportIdException($error->Message, $error->Code);
                     break;
                 default:
-                    $errorMessage = "The operation failed with the following faults:\n[{$error->ErrorCode}]\n{$error->Message}";
+                    $errorMessage = "[{$error->ErrorCode}]\n{$error->Message}";
                     throw new SoapUnknownErrorException($errorMessage, $error->Code);
                     break;
             }
