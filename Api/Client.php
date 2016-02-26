@@ -8,7 +8,14 @@ use BingAds\Reporting\SubmitGenerateReportRequest;
 use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Proxy\ClientProxy;
 use SoapVar;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapInternalErrorException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapInvalidCredentialsException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapNoCompleteDataAvailableException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapReportingServiceInvalidReportIdException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapUnknownErrorException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapUserIsNotAuthorizedException;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\RequestTimeoutException;
 
 class Client
 {
@@ -191,7 +198,11 @@ class Client
         $request = new SubmitGenerateReportRequest();
         $request->ReportRequest = $this->getReportRequest($report, $name);
 
-        return $this->proxy->GetService()->SubmitGenerateReport($request)->ReportRequestId;
+        try {
+            return $this->proxy->GetService()->SubmitGenerateReport($request)->ReportRequestId;
+        } catch (\SoapFault $e) {
+            $this->parseSoapFault($e);
+        }
     }
 
     /**
@@ -204,7 +215,11 @@ class Client
     private function getReportRequest($report, $name)
     {
         $name = "{$name}Request";
-        return new  SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
+        try {
+            return new  SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
+        } catch (\SoapFault $e) {
+            $this->parseSoapFault($e);
+        }
     }
 
     /**
@@ -224,12 +239,13 @@ class Client
      *
      * @return string
      *
-     * @throws \Exception
+     * @throws ReportRequestErrorException
+     * @throws RequestTimeoutException
      */
-    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 48, $sleep = 10, $incrementTime = true)
+    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 0, $sleep = 10, $incrementTime = true)
     {
         if ($count > $maxCount) {
-            throw new \Exception("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
+            throw new RequestTimeoutException("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
         }
 
         $reportRequestStatus = $this->pollGenerateReport($reportRequestId);
@@ -257,7 +273,7 @@ class Client
         }
 
         if ($reportRequestStatus->Status == "Error") {
-            throw new \Exception("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.");
+            throw new ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId );
         }
 
         return $reportRequestStatus;
@@ -281,7 +297,11 @@ class Client
         $request = new PollGenerateReportRequest();
         $request->ReportRequestId = $reportRequestId;
 
-        return $this->proxy->GetService()->PollGenerateReport($request)->ReportRequestStatus;
+        try {
+            return $this->proxy->GetService()->PollGenerateReport($request)->ReportRequestStatus;
+        } catch (SoapFault $e) {
+            $this->parseSoapFault($e);
+        }
     }
 
     /**
@@ -454,6 +474,45 @@ class Client
             $fileSystem->remove($file);
         }
         return $this;
+    }
+
+    private function parseSoapFault(\Exception $e)
+    {
+        if (isset($e->detail->AdApiFaultDetail))
+        {
+            $error = $e->detail->AdApiFaultDetail->Errors->AdApiError;
+        } else if (isset($e->detail->ApiFaultDetail)) {
+            if (!empty($e->detail->ApiFaultDetail->BatchErrors)){
+                $error = $error =$e->detail->ApiFaultDetail->Errors->AdApiError;
+            } elseif (!empty($e->detail->ApiFaultDetail->OperationErrors)) {
+                $error = $e->detail->ApiFaultDetail->OperationErrors->OperationError;
+            }
+        }
+        $errors = is_array($error) ? $error : ['error' => $error];
+        foreach ($errors as $error) {
+            switch ($error->Code)
+            {
+                case 0:
+                    throw new SoapInternalErrorException($error->Message, $error->Code);
+                    break;
+                case 105:
+                    throw new SoapInvalidCredentialsException($error->Message, $error->Code);
+                    break;
+                case 106:
+                    throw new SoapUserIsNotAuthorizedException($error->Message, $error->Code);
+                    break;
+                case 2004:
+                    throw new SoapNoCompleteDataAvailableException($error->Message, $error->Code);
+                    break;
+                case 2100:
+                    throw new SoapReportingServiceInvalidReportIdException($error->Message, $error->Code);
+                    break;
+                default:
+                    $errorMessage = "The operation failed with the following faults:\n[{$error->ErrorCode}]\n{$error->Message}";
+                    throw new SoapUnknownErrorException($errorMessage, $error->Code);
+                    break;
+            }
+        }
     }
 
 }
