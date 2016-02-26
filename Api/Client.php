@@ -8,14 +8,8 @@ use BingAds\Reporting\SubmitGenerateReportRequest;
 use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Proxy\ClientProxy;
 use SoapVar;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapInternalErrorException;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapInvalidCredentialsException;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapNoCompleteDataAvailableException;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapReportingServiceInvalidReportIdException;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapUnknownErrorException;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\SoapUserIsNotAuthorizedException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\RequestTimeoutException;
 
 class Client
 {
@@ -239,13 +233,13 @@ class Client
      *
      * @return string
      *
-     * @throws ReportRequestErrorException
-     * @throws RequestTimeoutException
+     * @throws Exceptions\ReportRequestErrorException
+     * @throws Exceptions\RequestTimeoutException
      */
     private function waitForStatus($reportRequestId, $count = 1, $maxCount = 0, $sleep = 10, $incrementTime = true)
     {
         if ($count > $maxCount) {
-            throw new RequestTimeoutException("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
+            throw new Exceptions\RequestTimeoutException("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
         }
 
         $reportRequestStatus = $this->pollGenerateReport($reportRequestId);
@@ -273,7 +267,7 @@ class Client
         }
 
         if ($reportRequestStatus->Status == "Error") {
-            throw new ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId );
+            throw new Exceptions\ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId );
         }
 
         return $reportRequestStatus;
@@ -476,6 +470,17 @@ class Client
         return $this;
     }
 
+
+    /**
+     * @param \Exception $e
+     *
+     * @throws Exceptions\SoapInternalErrorException
+     * @throws Exceptions\SoapInvalidCredentialsException
+     * @throws Exceptions\SoapNoCompleteDataAvailableException
+     * @throws Exceptions\SoapReportingServiceInvalidReportIdException
+     * @throws Exceptions\SoapUnknownErrorException
+     * @throws Exceptions\SoapUserIsNotAuthorizedException
+     */
     private function parseSoapFault(\Exception $e)
     {
         if (isset($e->detail->AdApiFaultDetail))
@@ -493,23 +498,23 @@ class Client
             switch ($error->Code)
             {
                 case 0:
-                    throw new SoapInternalErrorException($error->Message, $error->Code);
+                    throw new Exceptions\SoapInternalErrorException($error->Message, $error->Code);
                     break;
                 case 105:
-                    throw new SoapInvalidCredentialsException($error->Message, $error->Code);
+                    throw new Exceptions\SoapInvalidCredentialsException($error->Message, $error->Code);
                     break;
                 case 106:
-                    throw new SoapUserIsNotAuthorizedException($error->Message, $error->Code);
+                    throw new Exceptions\SoapUserIsNotAuthorizedException($error->Message, $error->Code);
                     break;
                 case 2004:
-                    throw new SoapNoCompleteDataAvailableException($error->Message, $error->Code);
+                    throw new Exceptions\SoapNoCompleteDataAvailableException($error->Message, $error->Code);
                     break;
                 case 2100:
-                    throw new SoapReportingServiceInvalidReportIdException($error->Message, $error->Code);
+                    throw new Exceptions\SoapReportingServiceInvalidReportIdException($error->Message, $error->Code);
                     break;
                 default:
                     $errorMessage = "[{$error->ErrorCode}]\n{$error->Message}";
-                    throw new SoapUnknownErrorException($errorMessage, $error->Code);
+                    throw new Exceptions\SoapUnknownErrorException($errorMessage, $error->Code);
                     break;
             }
         }
