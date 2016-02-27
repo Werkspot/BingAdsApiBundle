@@ -7,8 +7,6 @@ Checkout the Bing Ads full [documentation][bingDocumentation]
 
 **Warning: Currently in development**
 
-[![Build Status](https://travis-ci.org/LauLamanApps/OdrBundle.svg?branch=master)](https://travis-ci.org/LauLamanApps/OdrBundle)
-
 **TODO**
 - Create more Reports
 - Write tests
