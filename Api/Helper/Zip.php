@@ -3,7 +3,6 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
-use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;

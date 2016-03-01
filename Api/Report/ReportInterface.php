@@ -13,4 +13,5 @@ interface ReportInterface
      * @return ReportRequest
      */
     public function getRequest(array $columns, $timePeriod);
+
 }

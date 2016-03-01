@@ -3,6 +3,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Report;
 
+use BingAds\Reporting\ReportRequest;
+
 class BaseReport
 {
     const WSDL = 'https://api.bingads.microsoft.com/Api/Advertiser/Reporting/V9/ReportingService.svc?singleWsdl';
@@ -38,5 +40,10 @@ class BaseReport
     public function getReportLanguage($language)
     {
         $this->reportRequest->Language = $language;
+    }
+
+    protected function createReportRequest()
+    {
+        $this->reportRequest = new ReportRequest();
     }
 }
