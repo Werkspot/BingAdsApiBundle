@@ -36,8 +36,8 @@ class CsvTest extends \PHPUnit_Framework_TestCase
         $result = $csvHelper->fixDate($csvArray);
 
         $expectedResult = [
-            "\"1988/11/11\",\"account_1\",\"1\",\"group 1\",\"1\",\"0\",\"EUR\",\"0.00\",\"Italy\",\"\",\"Bolzano\",\"\",\"Bolzano\"",
-            "\"2007/04/22\",\"account_1\",\"2\",\"group 2\",\"4\",\"0\",\"EUR\",\"0.00\",\"Italy\",\"\",\"Milan\",\"\",\"Milan\"",
+            "\"1988/11/11\",\"account_1\",\"1\",\"group 1\",\"1\",\"0\",\"EUR\",\"0.00\",\"Italy\",\"\",\"Bolzano\",\"\",\"Bolzano\"\r\n",
+            "\"2007/04/22\",\"account_1\",\"2\",\"group 2\",\"4\",\"0\",\"EUR\",\"0.00\",\"Italy\",\"\",\"Milan\",\"\",\"Milan\"\r\n",
         ];
         $this->assertEquals($expectedResult, $result);
     }

@@ -3,12 +3,25 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\HttpStatusCodeException;
 
 class Zip
 {
+    /**
+     * @var ClientInterface
+     */
+    private $guzzleClient;
+
+    public function __construct(ClientInterface $guzzleClient = null)
+    {
+        $this->guzzleClient = $guzzleClient;
+    }
+
+
     /**
      *
      * @param string $url Url we want to download from
@@ -22,31 +35,7 @@ class Zip
      */
     public function download($url, $file)
     {
-        $fp = fopen($file, 'w+');
-
-        if ($fp === false) {
-            throw new \Exception('Could not open: ' . $file);
-        }
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-        curl_exec($ch);
-
-        if (curl_errno($ch)) {
-            throw new CurlException(curl_error($ch), curl_errno($ch));
-        }
-
-        $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        curl_close($ch);
-
-        if ($statusCode <> 200) {
-            echo "Status Code: " . $statusCode;
-            throw new HttpStatusCodeException("", $statusCode);
-        }
-
-
-        //file_put_contents($file, fopen($url, 'r')); //-- if need to change this code write test for exception
+        $this->guzzleClient->request('GET', $url, ['sink' => $file]);
         return $file;
     }
 

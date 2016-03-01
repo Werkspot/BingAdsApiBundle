@@ -96,7 +96,7 @@ class Csv
                 $csvStr .= $array[$i];
             }
 
-            $csvStr .= ($i < count($array) - 1) ? $separator : "" ;
+            $csvStr .= ($i < count($array) - 1) ? $separator : "\r\n" ;
         }
         return $csvStr;
     }

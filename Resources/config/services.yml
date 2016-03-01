@@ -13,6 +13,8 @@ services:
 
   bing.client.helper.zip:
     class: Werkspot\BingAdsApiBundle\Api\Helper\Zip
+    arguments:
+      - "@guzzle.client"
 
   bing.client.helper.csv:
     class: Werkspot\BingAdsApiBundle\Api\Helper\Csv
@@ -22,4 +24,5 @@ services:
 
   werkspot.request_new_access_token:
     class:  Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken
-    arguments: ["@guzzle.client"]
+    arguments:
+      - "@guzzle.client"

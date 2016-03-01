@@ -3,11 +3,30 @@
 
 namespace Tests\Werkspot\BingAdsApiBundle\Api\Helper;
 
+use Mockery;
+use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use Werkspot\BingAdsApiBundle\Api\Helper\Zip;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ZipTest extends \PHPUnit_Framework_TestCase
 {
+
+    public function testDownload()
+    {
+        $url = 'http://example.com';
+        $file = ASSETS_DIR . 'example.txt';
+        $clientMock = Mockery::mock(Client::class);
+        $clientMock
+            ->shouldReceive('request')
+            ->with('GET', $url, ['sink' => $file])
+            ->once()
+            ->andReturn(new Response(200, [], "test"));
+        $zipHelper = new Zip($clientMock);
+        $result = $zipHelper->download($url, $file);
+
+        $this->assertEquals($file, $result);
+    }
 
     public function testUnZip()
     {
