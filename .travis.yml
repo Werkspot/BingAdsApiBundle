@@ -1,0 +1,13 @@
+language: php
+
+php:
+  - '5.6'
+  - '7.0'
+  - hhvm
+  - nightly
+
+before_script:
+    - curl -s http://getcomposer.org/installer | php
+    - php composer.phar install --dev
+
+script: phpunit --configuration phpunit.xml.dist --coverage-text
