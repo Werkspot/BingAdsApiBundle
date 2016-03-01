@@ -1,6 +1,6 @@
 <?php
 
-namespace Test\Werkspot\BingAdsApiBundle\Guzzle;
+namespace Tests\Werkspot\BingAdsApiBundle\Guzzle;
 
 use Mockery;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;

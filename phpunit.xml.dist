@@ -9,4 +9,10 @@
     <listeners>
         <listener class="\Mockery\Adapter\Phpunit\TestListener" />
     </listeners>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">Api/</directory>
+            <directory suffix=".php">Guzzle/</directory>
+        </whitelist>
+    </filter>
 </phpunit>

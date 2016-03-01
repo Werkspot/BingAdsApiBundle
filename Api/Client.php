@@ -2,6 +2,7 @@
 
 namespace Werkspot\BingAdsApiBundle\Api;
 
+use BingAds\Reporting\ReportTimePeriod;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use BingAds\Reporting\SubmitGenerateReportRequest;
@@ -9,6 +10,8 @@ use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Proxy\ClientProxy;
 use SoapVar;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
+use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
+use Werkspot\BingAdsApiBundle\Api\Helper\Zip;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class Client
@@ -53,15 +56,24 @@ class Client
      */
     private $requestNewAccessToken;
 
+    /**
+     * @var ClientProxy
+     */
+    private $clientProxy;
 
-    public function __construct(RequestNewAccessToken $requestNewAccessToken)
+
+    public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Zip $zip, Csv $csv)
     {
         $this->requestNewAccessToken = $requestNewAccessToken;
+        $this->clientProxy = $clientProxy;
+        $this->zipHelper = $zip;
+        $this->csvHelper = $csv;
 
         ini_set("soap.wsdl_cache_enabled", "0");
         ini_set("soap.wsdl_cache_ttl", "0");
 
         $this->fileName = "report.zip";
+
 
         $this->report = [
             'GeoLocationPerformanceReport' => new Report\GeoLocationPerformanceReport(),
@@ -89,6 +101,7 @@ class Client
             'refresh_token' => $refreshToken,
             'dev_token' => $devToken,
         ];
+        return $this;
     }
 
     public function getRefreshToken()
@@ -112,6 +125,7 @@ class Client
             $this->apiDetails['redirect_uri'],
             $this->apiDetails['refresh_token']
         );
+
         $accessToken = $tokens['access'];
         $this->apiDetails['refresh_token'] = $tokens['refresh'];
 
@@ -137,7 +151,7 @@ class Client
      */
     private function setProxy($wsdl, $accessToken)
     {
-        $this->proxy = ClientProxy::ConstructWithCredentials($wsdl, null, null, $this->apiDetails['dev_token'], $accessToken);
+        $this->proxy = $this->clientProxy->ConstructWithCredentials($wsdl, null, null, $this->apiDetails['dev_token'], $accessToken);
     }
 
     /**
@@ -169,8 +183,8 @@ class Client
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
-        $zipFile = $this->downloadFile($reportDownloadUrl, $downloadFile);
-        $this->openZipFile($zipFile);
+        $zipFile = $this->zipHelper->download($reportDownloadUrl, $downloadFile);
+        $this->files = $this->zipHelper->unZip($zipFile);
         $this->fixFile();
 
         return $this->files;
@@ -236,7 +250,7 @@ class Client
      * @throws Exceptions\ReportRequestErrorException
      * @throws Exceptions\RequestTimeoutException
      */
-    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 0, $sleep = 10, $incrementTime = true)
+    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 48, $sleep = 10, $incrementTime = true)
     {
         if ($count > $maxCount) {
             throw new Exceptions\RequestTimeoutException("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
@@ -299,135 +313,23 @@ class Client
     }
 
     /**
-     *
-     * @param string $url Url we want to download from
-     * @param string $localFile local file we want to store the data including path (usually $this->cacheDir)
-     *
-     * @return string $localFile
-     */
-    private function downloadFile($url, $localFile)
-    {
-        file_put_contents($localFile, fopen($url, 'r'));
-        return $localFile;
-    }
-
-    /**
-     * Open zip file
-     *
-     * @param string $file zipFile we want to open
-     *
-     * @return array of extracted files
-     */
-    private function openZipFile($file, $delete = false)
-    {
-        $zipDir = dirname($file);
-        $zip = new \ZipArchive();
-        $zip->open($file);
-        $files = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $stat = $zip->statIndex($i);
-            $files[] = "{$zipDir}/{$stat['name']}";
-        }
-        $zip->extractTo($zipDir);
-        $zip->close();
-        if ($delete) {
-            $fs = new Filesystem();
-            $fs->remove($file);
-        }
-        $this->files = $files;
-
-        return $this;
-    }
-
-    /**
      * @param array|null $files
-     * @param array|null $options
      *
      * @return self
      */
-    private function fixFile(array $files = null, array $options = null)
+    private function fixFile(array $files = null)
     {
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
             $lines = file($file);
-            $lines = $this->removeLastLines($lines);
-            $lines = $this->fixDate($lines);
+            $lines = $this->csvHelper->removeLastLines($lines);
+            $lines = $this->csvHelper->fixDate($lines);
             $fp = fopen($file, 'w');
             fwrite($fp, implode('', $lines));
             fclose($fp);
         }
 
         return $this;
-    }
-
-    /**
-     *
-     * @param array $lines
-     * @param int   $noOfLinesToRemove
-     *
-     * @return array
-     */
-    private function removeLastLines(array $lines, $noOfLinesToRemove = 1)
-    {
-        $totalLines = count($lines);
-        $removeFrom = $totalLines - $noOfLinesToRemove;
-
-        for( $i = $removeFrom; $i < $totalLines; $i++ ) {
-            unset($lines[$i]);
-        }
-        return $lines;
-    }
-
-    /**
-     * @param array $lines
-     * @param string $separator
-     * @param string $enclosure
-     *
-     * @return array
-     */
-    private function fixDate(array $lines, $separator = ',', $enclosure = '"')
-    {
-        foreach ($lines as $key => $line) {
-            $columns = str_getcsv($line, $separator );
-            $isChanged = false;
-            foreach ($columns as $columnKey => $column)
-            {
-                if (preg_match('/^([1-9]|1[0-2])\/([1-9]|[1-2][0-9]|3[0-1])\/20[0-9]{2}$/', $column))
-                {
-                    $date = \DateTime::createFromFormat('m/d/Y', $column);
-                    $columns[$columnKey] = $date->format('Y/m/d');
-                    $isChanged = true;
-                }
-            }
-            if ($isChanged){
-                $lines[$key] = $this->arrayToCsvLine($columns, $separator, $enclosure);
-            }
-        }
-        return $lines;
-    }
-
-    /**
-     * @param array $array
-     * @param string $separator
-     * @param null $enclosure
-     *
-     * @return string
-     */
-    private function arrayToCsvLine(array $array, $separator = ',', $enclosure = null)
-    {
-        $csvStr = "";
-
-        for( $i = 0; $i < count($array); $i++ ) {
-
-            if ($enclosure) {
-                $csvStr .= $enclosure . str_replace($enclosure, $enclosure.$enclosure, $array[$i]) . $enclosure;
-            } else {
-                $csvStr .= $array[$i];
-            }
-
-            $csvStr .= ($i < count($array) - 1) ? $separator : "\r\n" ;
-        }
-        return $csvStr;
     }
 
     /**

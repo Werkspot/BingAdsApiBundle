@@ -17,6 +17,14 @@ class RequestNewAccessToken
     }
 
 
+    /**
+     * @param string $clientId
+     * @param string $clientSecret
+     * @param string $redirectUri
+     * @param string $refreshToken
+     *
+     * @return array
+     */
     public function get($clientId, $clientSecret, $redirectUri, $refreshToken)
     {
         $data = [
@@ -40,8 +48,5 @@ class RequestNewAccessToken
         ];
 
         return $tokens;
-
     }
-
-
 }

@@ -1,7 +1,21 @@
 services:
   werkspot.bing_ads_api_client:
     class: Werkspot\BingAdsApiBundle\Api\Client
-    arguments: ["@werkspot.request_new_access_token"]
+    arguments:
+      - "@werkspot.request_new_access_token"
+      - "@bing.client.proxy"
+      - "@bing.client.helper.zip"
+      - "@bing.client.helper.csv"
+
+  bing.client.proxy:
+    class: BingAds\Proxy\ClientProxy
+    arguments: ["example.com"]
+
+  bing.client.helper.zip:
+    class: Werkspot\BingAdsApiBundle\Api\Helper\Zip
+
+  bing.client.helper.csv:
+    class: Werkspot\BingAdsApiBundle\Api\Helper\Csv
 
   guzzle.client:
     class: GuzzleHttp\Client
