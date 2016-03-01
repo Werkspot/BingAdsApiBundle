@@ -9,7 +9,7 @@ use BingAds\Reporting\AccountThroughAdGroupReportScope;
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
 
-class GeoLocationPerformanceReport extends BaseReport implements ReportInterface
+class GeoLocationPerformanceReport extends BaseReport
 {
     const NAME = 'GeoLocationPerformanceReportRequest';
 
