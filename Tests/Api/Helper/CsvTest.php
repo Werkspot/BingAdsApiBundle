@@ -91,6 +91,21 @@ class CsvTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals((count($csvArray) -(Csv::FILE_HEADERS)), count($result));
     }
 
+    public function testArrayToCsvLine()
+    {
+        $array = [
+            'one',
+            'two',
+            'three',
+        ];
+
+        $csvHelper = new Csv();
+        $result = $csvHelper->arrayToCsvLine($array);
+        $this->assertEquals("one,two,three\r\n", $result);
+
+        $result = $csvHelper->arrayToCsvLine($array, '.', '"');
+        $this->assertEquals("\"one\".\"two\".\"three\"\r\n", $result);
+    }
 
     private function getCsvArray()
     {

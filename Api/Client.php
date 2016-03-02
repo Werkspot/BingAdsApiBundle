@@ -11,6 +11,7 @@ use BingAds\Proxy\ClientProxy;
 use SoapVar;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
+use Werkspot\BingAdsApiBundle\Api\Helper\Time;
 use Werkspot\BingAdsApiBundle\Api\Helper\Zip;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
@@ -60,14 +61,19 @@ class Client
      * @var ClientProxy
      */
     private $clientProxy;
+    /**
+     * @var Time
+     */
+    private $timeHelper;
 
 
-    public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Zip $zip, Csv $csv)
+    public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Zip $zip, Csv $csv, Time $timeHelper)
     {
         $this->requestNewAccessToken = $requestNewAccessToken;
         $this->clientProxy = $clientProxy;
         $this->zipHelper = $zip;
         $this->csvHelper = $csv;
+        $this->timeHelper = $timeHelper;
 
         ini_set("soap.wsdl_cache_enabled", "0");
         ini_set("soap.wsdl_cache_ttl", "0");
@@ -132,7 +138,6 @@ class Client
         $report = $this->report[$name];
         $reportRequest = $report->getRequest($columns, $timePeriod);
         $this->setProxy($report::WSDL, $accessToken);
-
         $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}");
 
         if ($fileLocation) {
@@ -204,9 +209,8 @@ class Client
     private function submitGenerateReport($report, $name)
     {
         $request = new SubmitGenerateReportRequest();
-        $request->ReportRequest = $this->getReportRequest($report, $name);
-
         try {
+            $request->ReportRequest = $this->getReportRequest($report, $name);
             return $this->proxy->GetService()->SubmitGenerateReport($request)->ReportRequestId;
         } catch (\SoapFault $e) {
             $this->parseSoapFault($e);
@@ -223,11 +227,7 @@ class Client
     private function getReportRequest($report, $name)
     {
         $name = "{$name}Request";
-        try {
-            return new  SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
-        } catch (\SoapFault $e) {
-            $this->parseSoapFault($e);
-        }
+        return new SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
     }
 
     /**
@@ -259,7 +259,7 @@ class Client
         $reportRequestStatus = $this->pollGenerateReport($reportRequestId);
         if ($reportRequestStatus->Status == "Pending") {
             $count++;
-            sleep($sleep);
+            $this->timeHelper->sleep($sleep);
             if ($incrementTime) {
                 switch ($count) {
                     case 31: // after 5 minutes
@@ -304,7 +304,6 @@ class Client
     {
         $request = new PollGenerateReportRequest();
         $request->ReportRequestId = $reportRequestId;
-
         try {
             return $this->proxy->GetService()->PollGenerateReport($request)->ReportRequestStatus;
         } catch (SoapFault $e) {
@@ -354,6 +353,8 @@ class Client
      * @param bool $allFiles delete all files in bundles cache, if false deletes only extracted files ($this->files)
      *
      * @return self
+     *
+     * @codeCoverageIgnore
      */
     public function clearCache($allFiles = false)
     {
@@ -382,6 +383,7 @@ class Client
      * @throws Exceptions\SoapReportingServiceInvalidReportIdException
      * @throws Exceptions\SoapUnknownErrorException
      * @throws Exceptions\SoapUserIsNotAuthorizedException
+     *
      */
     private function parseSoapFault(\Exception $e)
     {
@@ -396,28 +398,23 @@ class Client
             }
         }
         $errors = is_array($error) ? $error : ['error' => $error];
+//        var_dump($errors);
         foreach ($errors as $error) {
             switch ($error->Code)
             {
                 case 0:
                     throw new Exceptions\SoapInternalErrorException($error->Message, $error->Code);
-                    break;
                 case 105:
                     throw new Exceptions\SoapInvalidCredentialsException($error->Message, $error->Code);
-                    break;
                 case 106:
                     throw new Exceptions\SoapUserIsNotAuthorizedException($error->Message, $error->Code);
-                    break;
                 case 2004:
                     throw new Exceptions\SoapNoCompleteDataAvailableException($error->Message, $error->Code);
-                    break;
                 case 2100:
                     throw new Exceptions\SoapReportingServiceInvalidReportIdException($error->Message, $error->Code);
-                    break;
                 default:
-                    $errorMessage = "[{$error->ErrorCode}]\n{$error->Message}";
+                    $errorMessage = "[{$error->Code}]\n{$error->Message}";
                     throw new Exceptions\SoapUnknownErrorException($errorMessage, $error->Code);
-                    break;
             }
         }
     }

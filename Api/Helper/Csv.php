@@ -84,7 +84,7 @@ class Csv
      *
      * @return string
      */
-    private function arrayToCsvLine(array $array, $separator = ',', $enclosure = null)
+    public function arrayToCsvLine(array $array, $separator = ',', $enclosure = null)
     {
         $csvStr = "";
 
