@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
 use GuzzleHttp\ClientInterface;
@@ -20,13 +19,12 @@ class Zip
         $this->guzzleClient = $guzzleClient;
     }
 
-
     /**
      *
      * @param string $url Url we want to download from
      * @param string $file local file we want to store the data including path (usually $this->cacheDir)
      *
-     * @return string $localFile
+     * @return string
      *
      * @throws CurlException
      * @throws HttpStatusCodeException

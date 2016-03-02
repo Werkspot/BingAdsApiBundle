@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
-
 
 class Csv
 {
