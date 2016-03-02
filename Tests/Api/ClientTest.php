@@ -89,6 +89,36 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
     }
 
+    public function testPollGenerateReportSoapException()
+    {
+        $clientProxyMock = Mockery::mock(ClientProxy::class);
+        $clientProxyMock->ReportRequestId = 'reportID';
+        $clientProxyMock
+            ->shouldReceive('ConstructWithCredentials')
+            ->andReturnSelf()
+            ->once()
+            ->shouldReceive('GetNamespace')
+            ->once()
+            ->andReturn('Namespace')
+            ->shouldReceive('GetService')
+            ->twice()
+            ->andReturnSelf()
+            ->shouldReceive('SubmitGenerateReport')
+            ->once()
+            ->andReturnSelf()
+            ->shouldReceive('PollGenerateReport')
+            ->andThrow($this->generateSoapFault(0));
+        $this->expectException(Exceptions\SoapInternalErrorException::class);
+        $apiClient = $this->getApiClient(
+            $this->getRequestNewAccessTokenMock(),
+            $clientProxyMock,
+            new Helper\Zip(),
+            new Helper\Csv(),
+            $this->getTimeHelperMock()
+        );
+        $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
+    }
+
     /**
      * @dataProvider getTestSoapExceptionData
      *

@@ -306,7 +306,7 @@ class Client
         $request->ReportRequestId = $reportRequestId;
         try {
             return $this->proxy->GetService()->PollGenerateReport($request)->ReportRequestStatus;
-        } catch (SoapFault $e) {
+        } catch (\SoapFault $e) {
             $this->parseSoapFault($e);
         }
     }
