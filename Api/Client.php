@@ -191,7 +191,7 @@ class Client
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
-        $zipFile = $this->fileHelper->download($reportDownloadUrl, $downloadFile);
+        $zipFile = $this->fileHelper->getFile($reportDownloadUrl, $downloadFile);
         $this->files = $this->fileHelper->unZip($zipFile);
         $this->fixFile();
 

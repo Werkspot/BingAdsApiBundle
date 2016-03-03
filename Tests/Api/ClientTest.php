@@ -241,7 +241,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     {
         $zipHelperMock = Mockery::mock(Helper\File::class);
         $zipHelperMock
-            ->shouldReceive('download')
+            ->shouldReceive('getFile')
             ->andReturn('/tmp/report.zip')
             ->once()
             ->shouldReceive('unZip')
