@@ -6,6 +6,9 @@ use GuzzleHttp\ClientInterface;
 use Symfony\Component\Filesystem\FileSystem;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\HttpStatusCodeException;
+use Exception;
+use ZipArchive;
+
 
 class File
 {
@@ -56,8 +59,8 @@ class File
     }
 
     /**
-     * @param string $url Url we want to download from
-     * @param string $destination local file we want to store the data including path (usually $this->cacheDir)
+     * @param string $url
+     * @param string $destination
      *
      * @throws CurlException
      * @throws HttpStatusCodeException
@@ -74,18 +77,19 @@ class File
 
     /**
      * @param string $file zipFile we want to open
+     * @param null $extractTo
      * @param bool $delete
      *
-     * @throws \Exception
+     * @return array
      *
-     * @return array of extracted files
+     * @throws Exception
      */
-    public function unZip($file, $delete = true)
+    public function unZip($file, $extractTo = null, $delete = true)
     {
-        $zipDir = dirname($file);
-        $zip = new \ZipArchive();
+        $zipDir = ($extractTo) ? $extractTo : dirname($file);
+        $zip = new ZipArchive();
         if ($zip->open($file) !== true) {
-            throw new \Exception("Could not open file {$file}");
+            throw new Exception("Could not open file {$file}");
         }
         $files = [];
         for ($i = 0; $i < $zip->numFiles; ++$i) {
