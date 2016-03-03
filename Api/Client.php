@@ -7,6 +7,7 @@ use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Reporting\ReportTimePeriod;
 use BingAds\Reporting\SubmitGenerateReportRequest;
 use SoapVar;
+use SoapFault;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
@@ -206,7 +207,7 @@ class Client
             $request->ReportRequest = $this->getReportRequest($report, $name);
 
             return $this->proxy->GetService()->SubmitGenerateReport($request)->ReportRequestId;
-        } catch (\SoapFault $e) {
+        } catch (SoapFault $e) {
             $this->parseSoapFault($e);
         }
     }
@@ -296,7 +297,7 @@ class Client
         $request->ReportRequestId = $reportRequestId;
         try {
             return $this->proxy->GetService()->PollGenerateReport($request)->ReportRequestStatus;
-        } catch (\SoapFault $e) {
+        } catch (SoapFault $e) {
             $this->parseSoapFault($e);
         }
     }
@@ -364,7 +365,7 @@ class Client
     }
 
     /**
-     * @param \Exception $e
+     * @param SoapFault $e
      *
      * @throws Exceptions\SoapInternalErrorException
      * @throws Exceptions\SoapInvalidCredentialsException
@@ -373,7 +374,7 @@ class Client
      * @throws Exceptions\SoapUnknownErrorException
      * @throws Exceptions\SoapUserIsNotAuthorizedException
      */
-    private function parseSoapFault(\Exception $e)
+    private function parseSoapFault(SoapFault $e)
     {
         if (isset($e->detail->AdApiFaultDetail)) {
             $error = $e->detail->AdApiFaultDetail->Errors->AdApiError;
@@ -385,7 +386,6 @@ class Client
             }
         }
         $errors = is_array($error) ? $error : ['error' => $error];
-//        var_dump($errors);
         foreach ($errors as $error) {
             switch ($error->Code) {
                 case 0:
