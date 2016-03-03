@@ -21,7 +21,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $this->getClientProxyMock(),
-            $this->getZipHelperMock(),
+            $this->getFileHelperMock(),
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock()
         );
@@ -34,7 +34,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $this->getClientProxyMock(),
-            $this->getZipHelperMock(),
+            $this->getFileHelperMock(),
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock()
         );
@@ -52,7 +52,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $this->getClientProxyMock(),
-            $this->getZipHelperMock(),
+            $this->getFileHelperMock(),
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock()
         );
@@ -69,7 +69,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $this->getClientProxyMock('Pending'),
-            new Helper\Zip(),
+            new Helper\File(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
@@ -82,7 +82,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $this->getClientProxyMock('Error'),
-            new Helper\Zip(),
+            new Helper\File(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
@@ -112,7 +112,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $clientProxyMock,
-            new Helper\Zip(),
+            new Helper\File(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
@@ -180,7 +180,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             $clientProxyMock,
-            new Helper\Zip(),
+            new Helper\File(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
@@ -237,9 +237,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @return Mockery\MockInterface
      */
-    private function getZipHelperMock()
+    private function getFileHelperMock()
     {
-        $zipHelperMock = Mockery::mock(Helper\Zip::class);
+        $zipHelperMock = Mockery::mock(Helper\File::class);
         $zipHelperMock
             ->shouldReceive('download')
             ->andReturn('/tmp/report.zip')
@@ -281,13 +281,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     /**
      * @param RequestNewAccessToken $requestNewAccessToken
      * @param ClientProxy $clientProxy
-     * @param Helper\Zip $zipHelper
+     * @param Helper\Zip $fileHelper
      *
      * @return Client
      */
-    private function getApiClient(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Helper\Zip $zipHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
+    private function getApiClient(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
     {
-        $apiClient = new Client($requestNewAccessToken, $clientProxy, $zipHelper, $csvHelper, $timeHelper);
+        $apiClient = new Client($requestNewAccessToken, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
         $apiClient->setConfig(['cache_dir' => '/tmp']);
         $apiClient->setApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken');
 

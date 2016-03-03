@@ -12,7 +12,7 @@ use SoapVar;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
-use Werkspot\BingAdsApiBundle\Api\Helper\Zip;
+use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class Client
@@ -61,17 +61,20 @@ class Client
      * @var ClientProxy
      */
     private $clientProxy;
+
     /**
      * @var Time
      */
     private $timeHelper;
 
+    private $fileHelper;
 
-    public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Zip $zip, Csv $csv, Time $timeHelper)
+
+    public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
     {
         $this->requestNewAccessToken = $requestNewAccessToken;
         $this->clientProxy = $clientProxy;
-        $this->zipHelper = $zip;
+        $this->fileHelper = $file;
         $this->csvHelper = $csv;
         $this->timeHelper = $timeHelper;
 
@@ -188,8 +191,8 @@ class Client
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
-        $zipFile = $this->zipHelper->download($reportDownloadUrl, $downloadFile);
-        $this->files = $this->zipHelper->unZip($zipFile);
+        $zipFile = $this->fileHelper->download($reportDownloadUrl, $downloadFile);
+        $this->files = $this->fileHelper->unZip($zipFile);
         $this->fixFile();
 
         return $this->files;
