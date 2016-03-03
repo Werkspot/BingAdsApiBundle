@@ -2,6 +2,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
-class SoapInvalidCredentialsException extends \Exception
+use Exception;
+
+class SoapInvalidCredentialsException extends Exception
 {
 }

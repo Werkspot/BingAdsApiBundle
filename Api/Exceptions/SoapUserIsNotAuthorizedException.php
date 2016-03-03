@@ -2,6 +2,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
-class SoapUserIsNotAuthorizedException extends \Exception
+use Exception;
+
+class SoapUserIsNotAuthorizedException extends Exception
 {
 }

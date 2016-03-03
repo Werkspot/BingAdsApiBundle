@@ -2,6 +2,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
-class SoapInternalErrorException extends \Exception
+use Exception;
+
+class SoapInternalErrorException extends Exception
 {
 }

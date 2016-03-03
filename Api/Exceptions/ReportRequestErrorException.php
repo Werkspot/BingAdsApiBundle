@@ -2,10 +2,12 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
+use Exception;
+
 /**
  * @codeCoverageIgnore
  */
-class ReportRequestErrorException extends \Exception
+class ReportRequestErrorException extends Exception
 {
     /**
      * @var string

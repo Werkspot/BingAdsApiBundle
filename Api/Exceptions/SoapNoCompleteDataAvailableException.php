@@ -2,6 +2,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
-class SoapNoCompleteDataAvailableException extends \Exception
+use Exception;
+
+class SoapNoCompleteDataAvailableException extends Exception
 {
 }

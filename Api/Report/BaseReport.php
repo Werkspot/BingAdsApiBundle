@@ -37,9 +37,16 @@ class BaseReport implements ReportInterface
         return $this;
     }
 
+    /**
+     * @param string $language
+     *
+     * @return $this
+     */
     public function setReportLanguage($language)
     {
         $this->reportRequest->Language = $language;
+
+        return $this;
     }
 
     protected function createReportRequest()
@@ -47,6 +54,12 @@ class BaseReport implements ReportInterface
         $this->reportRequest = new ReportRequest();
     }
 
+    /**
+     * @param array|null $columns
+     * @param string|null $timePeriod
+     *
+     * @return mixed
+     */
     public function getRequest(array $columns = null, $timePeriod = null)
     {
         return $this->reportRequest;

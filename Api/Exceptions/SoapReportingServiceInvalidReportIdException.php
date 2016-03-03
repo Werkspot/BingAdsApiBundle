@@ -2,6 +2,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
-class SoapReportingServiceInvalidReportIdException extends \Exception
+use Exception;
+
+class SoapReportingServiceInvalidReportIdException extends Exception
 {
 }
