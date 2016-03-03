@@ -9,10 +9,11 @@ use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
-use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
+use PHPUnit_Framework_TestCase;
 
-class ClientTest extends \PHPUnit_Framework_TestCase
+class ClientTest extends PHPUnit_Framework_TestCase
 {
     private $accessToken = '2ec09aeccaf634d982eec793037e37fe';
     private $refreshToken = '0c59f7e609b0cc467067e39d523116ce';
@@ -224,9 +225,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     private function getRequestNewAccessTokenMock()
     {
-        $requestNewAccessTokenMock = Mockery::mock(RequestNewAccessToken::class);
+        $requestNewAccessTokenMock = Mockery::mock(OauthTokenService::class);
         $requestNewAccessTokenMock
-            ->shouldReceive('get')
+            ->shouldReceive('refreshToken')
             ->with('clientId', 'clientSecret', 'redirectUri', AccessToken::class)
             ->once()
             ->andReturn(new AccessToken($this->accessToken, $this->refreshToken));
@@ -279,13 +280,15 @@ class ClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param RequestNewAccessToken $requestNewAccessToken
+     * @param OauthTokenService $requestNewAccessToken
      * @param ClientProxy $clientProxy
-     * @param Helper\Zip $fileHelper
+     * @param Helper\File $fileHelper
+     * @param Helper\Csv $csvHelper
+     * @param Helper\Time $timeHelper
      *
      * @return Client
      */
-    private function getApiClient(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
+    private function getApiClient(OauthTokenService $requestNewAccessToken, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
     {
         $apiClient = new Client($requestNewAccessToken, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
         $apiClient->setConfig(['cache_dir' => '/tmp']);

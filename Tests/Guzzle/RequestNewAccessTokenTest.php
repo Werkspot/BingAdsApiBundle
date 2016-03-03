@@ -8,10 +8,11 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
-use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
+use PHPUnit_Framework_TestCase;
 
-class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
+class RequestNewAccessTokenTest extends PHPUnit_Framework_TestCase
 {
     private $accessToken = '2ec09aeccaf634d982eec793037e37fe';
     private $refreshToken = '0c59f7e609b0cc467067e39d523116ce';
@@ -30,14 +31,14 @@ class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
         $clientMock = Mockery::mock(Client::class);
         $clientMock
             ->shouldReceive('request')
-            ->with('POST', RequestNewAccessToken::URL, [
+            ->with('POST', OauthTokenService::URL, [
                 'headers' => [
                     'Content-Type' => 'application/x-www-form-urlencoded'
                 ],
                 'form_params' => [
                     'client_id' => 'client_id',
                     'client_secret' => 'client_secret',
-                    'grant_type' => RequestNewAccessToken::GRANTTYPE,
+                    'grant_type' => OauthTokenService::GRANTTYPE,
                     'redirect_uri' => 'redirect_uri',
                     'refresh_token' => $this->refreshToken
                 ]
@@ -45,8 +46,8 @@ class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
             ->once()
             ->andReturn(new Response(200, [], json_encode($data)));
 
-        $guzzleClient = new RequestNewAccessToken($clientMock);
-        $response = $guzzleClient->get('client_id', 'client_secret', 'redirect_uri', new AccessToken(null, $this->refreshToken));
+        $guzzleClient = new OauthTokenService($clientMock);
+        $response = $guzzleClient->refreshToken('client_id', 'client_secret', 'redirect_uri', new AccessToken(null, $this->refreshToken));
 
         $this->assertEquals($response->getAccessToken(), $this->accessToken);
         $this->assertEquals($response->getRefreshToken(), $this->refreshToken);
@@ -63,7 +64,7 @@ class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
         $mock = new MockHandler([new Response(400, [], json_encode($data))]);
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
-        $guzzleClient = new RequestNewAccessToken($client);
-        $guzzleClient->get(null, null, null, new AccessToken(null, null));
+        $guzzleClient = new OauthTokenService($client);
+        $guzzleClient->refreshToken(null, null, null, new AccessToken(null, null));
     }
 }

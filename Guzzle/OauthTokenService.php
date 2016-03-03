@@ -5,7 +5,7 @@ namespace Werkspot\BingAdsApiBundle\Guzzle;
 use GuzzleHttp\ClientInterface;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
 
-class RequestNewAccessToken
+class OauthTokenService
 {
     private $httpClient;
 
@@ -25,7 +25,7 @@ class RequestNewAccessToken
      *
      * @return AccessToken
      */
-    public function get($clientId, $clientSecret, $redirectUri, AccessToken $accessToken)
+    public function refreshToken($clientId, $clientSecret, $redirectUri, AccessToken $accessToken)
     {
         $data = [
             'headers' => [

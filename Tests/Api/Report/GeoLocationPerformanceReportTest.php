@@ -8,8 +8,9 @@ use BingAds\Reporting\NonHourlyReportAggregation;
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
 use Werkspot\BingAdsApiBundle\Api\Report\GeoLocationPerformanceReport;
+use PHPUnit_Framework_TestCase;
 
-class GeoLocationPerformanceReportTest extends \PHPUnit_Framework_TestCase
+class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
 {
     const YESTERDAY = 'Yesterday';
 

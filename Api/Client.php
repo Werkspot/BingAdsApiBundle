@@ -13,7 +13,7 @@ use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
-use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
 
 class Client
@@ -49,9 +49,9 @@ class Client
     private $files;
 
     /**
-     * @var RequestNewAccessToken
+     * @var OauthTokenService
      */
-    private $requestNewAccessToken;
+    private $oauthTokenService;
 
     /**
      * @var ClientProxy
@@ -65,9 +65,9 @@ class Client
 
     private $fileHelper;
 
-    public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
+    public function __construct(OauthTokenService $oauthTokenService, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
     {
-        $this->requestNewAccessToken = $requestNewAccessToken;
+        $this->oauthTokenService = $oauthTokenService;
         $this->clientProxy = $clientProxy;
         $this->fileHelper = $file;
         $this->csvHelper = $csv;
@@ -122,7 +122,7 @@ class Client
      */
     public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
-        $tokens = $this->requestNewAccessToken->get(
+        $tokens = $this->oauthTokenService->refreshToken(
             $this->apiDetails['client_id'],
             $this->apiDetails['secret'],
             $this->apiDetails['redirect_uri'],

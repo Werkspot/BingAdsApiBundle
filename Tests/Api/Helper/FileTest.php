@@ -9,8 +9,9 @@ use GuzzleHttp\Psr7\Response;
 use Mockery;
 use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
+use PHPUnit_Framework_TestCase;
 
-class FileTest extends \PHPUnit_Framework_TestCase
+class FileTest extends PHPUnit_Framework_TestCase
 {
     private $fileSystem;
 
