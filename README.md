@@ -6,6 +6,8 @@ Checkout the Bing Ads full [documentation][bingDocumentation]
 
 **Warning: Currently in development**
 
+[![Build Status](https://travis-ci.org/Werkspot/BingAdsApiBundle.svg?branch=master)](https://travis-ci.org/Werkspot/BingAdsApiBundle)
+
 **TODO**
 - Create more Reports
 - Write tests
