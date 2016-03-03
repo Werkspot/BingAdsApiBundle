@@ -4,6 +4,7 @@ The BingAdsApiBundle provides a simple integration of the [Bing Ads API][bingads
 
 Checkout the Bing Ads full [documentation][bingDocumentation]
 
+
 **Warning: Currently in development**
 
 [![Build Status](https://travis-ci.org/Werkspot/BingAdsApiBundle.svg?branch=master)](https://travis-ci.org/Werkspot/BingAdsApiBundle)
