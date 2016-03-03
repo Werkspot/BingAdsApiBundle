@@ -14,6 +14,7 @@ use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Model\AccessToken;
 
 class Client
 {
@@ -125,11 +126,11 @@ class Client
             $this->apiDetails['client_id'],
             $this->apiDetails['secret'],
             $this->apiDetails['redirect_uri'],
-            $this->apiDetails['refresh_token']
+            new AccessToken(null,$this->apiDetails['refresh_token'])
         );
 
-        $accessToken = $tokens['access'];
-        $this->apiDetails['refresh_token'] = $tokens['refresh'];
+        $accessToken = $tokens->getAccessToken();
+        $this->apiDetails['refresh_token'] = $tokens->getRefreshToken();
 
         $report = $this->report[$name];
         $reportRequest = $report->getRequest($columns, $timePeriod);

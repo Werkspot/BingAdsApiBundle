@@ -9,6 +9,7 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Model\AccessToken;
 
 class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
 {
@@ -38,17 +39,17 @@ class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
                     'client_secret' => 'client_secret',
                     'grant_type' => RequestNewAccessToken::GRANTTYPE,
                     'redirect_uri' => 'redirect_uri',
-                    'refresh_token' => 'refresh_token'
+                    'refresh_token' => $this->refreshToken
                 ]
             ])
             ->once()
             ->andReturn(new Response(200, [], json_encode($data)));
 
         $guzzleClient = new RequestNewAccessToken($clientMock);
-        $response = $guzzleClient->get('client_id', 'client_secret', 'redirect_uri', 'refresh_token');
+        $response = $guzzleClient->get('client_id', 'client_secret', 'redirect_uri', new AccessToken(null, $this->refreshToken));
 
-        $this->assertEquals($response['access'], $this->accessToken);
-        $this->assertEquals($response['refresh'], $this->refreshToken);
+        $this->assertEquals($response->getAccessToken(), $this->accessToken);
+        $this->assertEquals($response->getRefreshToken(), $this->refreshToken);
     }
 
     public function testClientException()
@@ -63,6 +64,6 @@ class RequestNewAccessTokenTest extends \PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
         $guzzleClient = new RequestNewAccessToken($client);
-        $guzzleClient->get(null, null, null, null);
+        $guzzleClient->get(null, null, null, new AccessToken(null, null));
     }
 }

@@ -9,7 +9,6 @@ services:
 
   bing.client.proxy:
     class: BingAds\Proxy\ClientProxy
-    arguments: ["example.com"]
 
   bing.client.helper.zip:
     class: Werkspot\BingAdsApiBundle\Api\Helper\Zip

@@ -10,6 +10,7 @@ use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Model\AccessToken;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
@@ -226,9 +227,9 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $requestNewAccessTokenMock = Mockery::mock(RequestNewAccessToken::class);
         $requestNewAccessTokenMock
             ->shouldReceive('get')
-            ->with('clientId', 'clientSecret', 'redirectUri', 'refreshToken')
+            ->with('clientId', 'clientSecret', 'redirectUri', AccessToken::class)
             ->once()
-            ->andReturn(['access' => $this->accessToken, 'refresh' => $this->refreshToken]);
+            ->andReturn(new AccessToken($this->accessToken, $this->refreshToken));
 
         return $requestNewAccessTokenMock;
     }
