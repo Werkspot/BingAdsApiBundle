@@ -11,7 +11,7 @@ Checkout the Bing Ads full [documentation][bingDocumentation]
 
 **TODO**
 - Create more Reports
-- Write tests
+- Clean up code
 
 
 Installation
