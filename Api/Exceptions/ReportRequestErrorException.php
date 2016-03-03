@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
 /**

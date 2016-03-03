@@ -2,10 +2,9 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Report;
 
-
-use BingAds\Reporting\NonHourlyReportAggregation;
-use BingAds\Reporting\GeoLocationPerformanceReportRequest;
 use BingAds\Reporting\AccountThroughAdGroupReportScope;
+use BingAds\Reporting\GeoLocationPerformanceReportRequest;
+use BingAds\Reporting\NonHourlyReportAggregation;
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
 
@@ -41,5 +40,4 @@ class GeoLocationPerformanceReport extends BaseReport
 
         return $this;
     }
-
 }

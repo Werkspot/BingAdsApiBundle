@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Tests\Werkspot\BingAdsApiBundle\Tests\Api\Report;
 
 use BingAds\Reporting\AccountThroughAdGroupReportScope;
@@ -27,7 +26,7 @@ class GeoLocationPerformanceReportTest extends \PHPUnit_Framework_TestCase
         $expected->Columns = [];
 
         $report = new GeoLocationPerformanceReport();
-        $result = $report->getRequest([],self::YESTERDAY);
+        $result = $report->getRequest([], self::YESTERDAY);
 
         $this->assertEquals($expected, $result);
     }
@@ -36,11 +35,11 @@ class GeoLocationPerformanceReportTest extends \PHPUnit_Framework_TestCase
     {
         $report = new GeoLocationPerformanceReport();
 
-        $result = $report->getRequest([],self::YESTERDAY);
+        $result = $report->getRequest([], self::YESTERDAY);
         $this->assertEquals(NonHourlyReportAggregation::Daily, $result->Aggregation);
 
         $report->setAggregation(NonHourlyReportAggregation::Monthly);
-        $result = $report->getRequest([],self::YESTERDAY);
+        $result = $report->getRequest([], self::YESTERDAY);
 
         $this->assertEquals(NonHourlyReportAggregation::Monthly, $result->Aggregation);
     }

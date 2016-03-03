@@ -2,23 +2,21 @@
 
 namespace Werkspot\BingAdsApiBundle\Api;
 
+use BingAds\Proxy\ClientProxy;
+use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Reporting\ReportTimePeriod;
+use BingAds\Reporting\SubmitGenerateReportRequest;
+use SoapVar;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use BingAds\Reporting\SubmitGenerateReportRequest;
-use BingAds\Reporting\PollGenerateReportRequest;
-use BingAds\Proxy\ClientProxy;
-use SoapVar;
-use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
-use Werkspot\BingAdsApiBundle\Api\Helper\Time;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
+use Werkspot\BingAdsApiBundle\Api\Helper\Time;
 use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class Client
 {
     /**
-     *
      * @var array
      */
     private $config = [];
@@ -28,26 +26,22 @@ class Client
      */
     private $apiDetails = [];
 
-
     /**
      * @var string
      */
     private $fileName;
 
     /**
-     *
      * @var ClientProxy
      */
     private $proxy;
 
     /**
-     *
      * @var string
      */
     public $report;
 
     /**
-     *
      * @var string
      */
     private $files;
@@ -69,7 +63,6 @@ class Client
 
     private $fileHelper;
 
-
     public function __construct(RequestNewAccessToken $requestNewAccessToken, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
     {
         $this->requestNewAccessToken = $requestNewAccessToken;
@@ -78,16 +71,14 @@ class Client
         $this->csvHelper = $csv;
         $this->timeHelper = $timeHelper;
 
-        ini_set("soap.wsdl_cache_enabled", "0");
-        ini_set("soap.wsdl_cache_ttl", "0");
+        ini_set('soap.wsdl_cache_enabled', '0');
+        ini_set('soap.wsdl_cache_ttl', '0');
 
-        $this->fileName = "report.zip";
-
+        $this->fileName = 'report.zip';
 
         $this->report = [
             'GeoLocationPerformanceReport' => new Report\GeoLocationPerformanceReport(),
         ];
-
     }
 
     /**
@@ -110,6 +101,7 @@ class Client
             'refresh_token' => $refreshToken,
             'dev_token' => $devToken,
         ];
+
         return $this;
     }
 
@@ -145,12 +137,11 @@ class Client
 
         if ($fileLocation) {
             $this->moveFirstFile($fileLocation);
+
             return $fileLocation;
         } else {
             return $files;
         }
-
-
     }
 
     /**
@@ -182,9 +173,9 @@ class Client
      * @param $name
      * @param $downloadFile
      *
-     * @return string
-     *
      * @throws \Exception
+     *
+     * @return string
      */
     private function getFilesFromReportRequest($reportRequest, $name, $downloadFile)
     {
@@ -199,7 +190,6 @@ class Client
     }
 
     /**
-     *
      * SubmitGenerateReport helper method calls the corresponding Bing Ads service operation
      * to request the report identifier. The identifier is used to check report generation status
      * before downloading the report.
@@ -214,6 +204,7 @@ class Client
         $request = new SubmitGenerateReportRequest();
         try {
             $request->ReportRequest = $this->getReportRequest($report, $name);
+
             return $this->proxy->GetService()->SubmitGenerateReport($request)->ReportRequestId;
         } catch (\SoapFault $e) {
             $this->parseSoapFault($e);
@@ -221,7 +212,6 @@ class Client
     }
 
     /**
-     *
      * @param mixed  $report
      * @param string $name
      *
@@ -230,11 +220,11 @@ class Client
     private function getReportRequest($report, $name)
     {
         $name = "{$name}Request";
+
         return new SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
     }
 
     /**
-     *
      * Check if the report is ready for download
      * if not wait 10 sec and retry. (up to 6,5 hour)
      * After 30 tries check every 1 minute
@@ -246,12 +236,12 @@ class Client
      * @param int     $count
      * @param int     $maxCount
      * @param int     $sleep
-     * @param boolean $incrementTime
-     *
-     * @return string
+     * @param bool $incrementTime
      *
      * @throws Exceptions\ReportRequestErrorException
      * @throws Exceptions\RequestTimeoutException
+     *
+     * @return string
      */
     private function waitForStatus($reportRequestId, $count = 1, $maxCount = 48, $sleep = 10, $incrementTime = true)
     {
@@ -260,39 +250,36 @@ class Client
         }
 
         $reportRequestStatus = $this->pollGenerateReport($reportRequestId);
-        if ($reportRequestStatus->Status == "Pending") {
-            $count++;
+        if ($reportRequestStatus->Status == 'Pending') {
+            ++$count;
             $this->timeHelper->sleep($sleep);
             if ($incrementTime) {
                 switch ($count) {
                     case 31: // after 5 minutes
-                        $sleep = (1*60);
+                        $sleep = (1 * 60);
                         break;
                     case 35: // after 10 minutes
-                        $sleep = (5*60);
+                        $sleep = (5 * 60);
                         break;
                     case 40: // after 30 minutes
-                        $sleep = (15*60);
+                        $sleep = (15 * 60);
                         break;
                     case 44: // after 1,5 hours
-                        $sleep = (30*60);
+                        $sleep = (30 * 60);
                         break;
                 }
-
             }
             $reportRequestStatus = $this->waitForStatus($reportRequestId, $count, $maxCount, $sleep, $incrementTime);
         }
 
-        if ($reportRequestStatus->Status == "Error") {
-            throw new Exceptions\ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId );
+        if ($reportRequestStatus->Status == 'Error') {
+            throw new Exceptions\ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId);
         }
 
         return $reportRequestStatus;
-
     }
 
     /**
-     *
      * Check the status of the report request. The guidance of how often to poll
      * for status is from every five to 15 minutes depending on the amount
      * of data being requested. For smaller reports, you can poll every couple
@@ -335,7 +322,6 @@ class Client
     }
 
     /**
-     *
      * Move first file form array $this->files to the target location
      *
      * @param string $target
@@ -373,9 +359,9 @@ class Client
         foreach ($files as $file) {
             $fileSystem->remove($file);
         }
+
         return $this;
     }
-
 
     /**
      * @param \Exception $e
@@ -386,16 +372,14 @@ class Client
      * @throws Exceptions\SoapReportingServiceInvalidReportIdException
      * @throws Exceptions\SoapUnknownErrorException
      * @throws Exceptions\SoapUserIsNotAuthorizedException
-     *
      */
     private function parseSoapFault(\Exception $e)
     {
-        if (isset($e->detail->AdApiFaultDetail))
-        {
+        if (isset($e->detail->AdApiFaultDetail)) {
             $error = $e->detail->AdApiFaultDetail->Errors->AdApiError;
-        } else if (isset($e->detail->ApiFaultDetail)) {
-            if (!empty($e->detail->ApiFaultDetail->BatchErrors)){
-                $error = $error =$e->detail->ApiFaultDetail->Errors->AdApiError;
+        } elseif (isset($e->detail->ApiFaultDetail)) {
+            if (!empty($e->detail->ApiFaultDetail->BatchErrors)) {
+                $error = $error = $e->detail->ApiFaultDetail->Errors->AdApiError;
             } elseif (!empty($e->detail->ApiFaultDetail->OperationErrors)) {
                 $error = $e->detail->ApiFaultDetail->OperationErrors->OperationError;
             }
@@ -403,8 +387,7 @@ class Client
         $errors = is_array($error) ? $error : ['error' => $error];
 //        var_dump($errors);
         foreach ($errors as $error) {
-            switch ($error->Code)
-            {
+            switch ($error->Code) {
                 case 0:
                     throw new Exceptions\SoapInternalErrorException($error->Message, $error->Code);
                 case 105:
@@ -421,5 +404,4 @@ class Client
             }
         }
     }
-
 }

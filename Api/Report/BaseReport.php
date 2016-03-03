@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Reporting\ReportRequest;
@@ -28,6 +27,7 @@ class BaseReport implements ReportInterface
 
     /**
      * @param bool $returnOnlyCompleteData
+     *
      * @return $this
      */
     public function setReturnOnlyCompleteData($returnOnlyCompleteData)

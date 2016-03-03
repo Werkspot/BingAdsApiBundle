@@ -23,22 +23,21 @@ class File
     {
         $this->guzzleClient = $guzzleClient;
         $this->fileSystem = new FileSystem();
-
     }
 
     /**
      * @param $source
      * @param null|string $destination
      *
-     * @return bool|string
-     *
      * @throws \Exception
+     *
+     * @return bool|string
      */
     public function getFile($source, $destination = null)
     {
         if (preg_match('/^((https?)\:\/\/)?([a-z0-9-.]*)\.([a-z]{2,255})(\:[0-9]{2,5})?(\/([a-z0-9+$_-]\.?)+)*\/?(\?[a-z+&$_.-][a-z0-9;:@&%=+\/$_.-]*)?(#[a-z_.-][a-z0-9+$_.-]*)?$/', $source)) {
             if (!$destination) {
-                throw new \Exception("No file destination given.");
+                throw new \Exception('No file destination given.');
             }
             $destination = $this->download($source, $destination);
         } else {
@@ -52,34 +51,34 @@ class File
         if (!$this->fileSystem->exists($destination)) {
             return false;
         }
+
         return $destination;
     }
 
     /**
-     *
      * @param string $url Url we want to download from
      * @param string $destination local file we want to store the data including path (usually $this->cacheDir)
-     *
-     * @return string
      *
      * @throws CurlException
      * @throws HttpStatusCodeException
      * @throws \Exception
+     *
+     * @return string
      */
     public function download($url, $destination)
     {
         $this->guzzleClient->request('GET', $url, ['sink' => $destination]);
+
         return $destination;
     }
 
     /**
-     *
      * @param string $file zipFile we want to open
      * @param bool $delete
      *
-     * @return array of extracted files
-     *
      * @throws \Exception
+     *
+     * @return array of extracted files
      */
     public function unZip($file, $delete = true)
     {
@@ -89,7 +88,7 @@ class File
             throw new \Exception("Could not open file {$file}");
         }
         $files = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
+        for ($i = 0; $i < $zip->numFiles; ++$i) {
             $stat = $zip->statIndex($i);
             $files[] = "{$zipDir}/{$stat['name']}";
         }
@@ -98,6 +97,7 @@ class File
         if ($delete) {
             $this->fileSystem->remove($file);
         }
+
         return $files;
     }
 }

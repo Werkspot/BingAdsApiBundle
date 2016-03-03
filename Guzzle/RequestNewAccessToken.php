@@ -16,7 +16,6 @@ class RequestNewAccessToken
         $this->httpClient = $httpClient;
     }
 
-
     /**
      * @param string $clientId
      * @param string $clientSecret

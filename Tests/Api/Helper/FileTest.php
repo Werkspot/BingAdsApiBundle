@@ -1,15 +1,14 @@
 <?php
 
-
 namespace Tests\Werkspot\BingAdsApiBundle\Api\Helper;
 
-use Mockery;
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
-use Werkspot\BingAdsApiBundle\Api\Helper\File;
+use GuzzleHttp\Psr7\Response;
+use Mockery;
 use Symfony\Component\Filesystem\Filesystem;
+use Werkspot\BingAdsApiBundle\Api\Helper\File;
 
 class FileTest extends \PHPUnit_Framework_TestCase
 {
@@ -61,7 +60,7 @@ class FileTest extends \PHPUnit_Framework_TestCase
             ->shouldReceive('request')
             ->with('GET', $url, ['sink' => $file])
             ->once()
-            ->andReturn(new Response(200, [], "test"));
+            ->andReturn(new Response(200, [], 'test'));
 
         $fileHelper = new File($clientMock);
         $result = $fileHelper->download($url, $file);
@@ -78,19 +77,18 @@ class FileTest extends \PHPUnit_Framework_TestCase
 
         $fileHelper = new File(new Client());
         $fileHelper->getFile($url);
-
     }
 
     public function testUnZip()
     {
-        $file = ASSETS_DIR . "test.zip";
+        $file = ASSETS_DIR . 'test.zip';
 
-        $this->fileSystem->copy(ASSETS_DIR . "report.zip", $file);
+        $this->fileSystem->copy(ASSETS_DIR . 'report.zip', $file);
 
         $fileHelper = new File();
         $files = $fileHelper->unZip($file);
 
-        $this->assertEquals($files, [ ASSETS_DIR . "0039202.csv"]);
+        $this->assertEquals($files, [ASSETS_DIR . '0039202.csv']);
 
         //-- Clean Files
         foreach ($files as $file) {
@@ -103,9 +101,8 @@ class FileTest extends \PHPUnit_Framework_TestCase
      */
     public function testCorruptUnZip()
     {
-        $file = ASSETS_DIR . "corrupt.zip";
+        $file = ASSETS_DIR . 'corrupt.zip';
         $fileHelper = new File();
         $fileHelper->unZip($file, false);
-
     }
 }

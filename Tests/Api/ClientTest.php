@@ -8,13 +8,13 @@ use Mockery;
 use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
-use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 use Werkspot\BingAdsApiBundle\Api\Helper;
+use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
 
 class ClientTest extends \PHPUnit_Framework_TestCase
 {
-    private $accessToken = "2ec09aeccaf634d982eec793037e37fe";
-    private $refreshToken = "0c59f7e609b0cc467067e39d523116ce";
+    private $accessToken = '2ec09aeccaf634d982eec793037e37fe';
+    private $refreshToken = '0c59f7e609b0cc467067e39d523116ce';
 
     public function testGeoLocationPerformanceReportReturnsArrayWithCsv()
     {
@@ -38,13 +38,12 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock()
         );
-        $result = $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek, ASSETS_DIR .'test.csv');
+        $result = $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek, ASSETS_DIR . 'test.csv');
         $this->assertEquals(ASSETS_DIR . 'test.csv', $result);
 
         //--Move File back
         $fileSystem = new Filesystem();
         $fileSystem->rename(ASSETS_DIR . 'test.csv', ASSETS_DIR . 'report.csv');
-
     }
 
     public function testGetRefreshToken()
@@ -166,7 +165,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     private function runClientSoapException($code)
     {
-
         $clientProxyMock = Mockery::mock(ClientProxy::class);
         $clientProxyMock
             ->shouldReceive('ConstructWithCredentials')
@@ -230,7 +228,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase
             ->shouldReceive('get')
             ->with('clientId', 'clientSecret', 'redirectUri', 'refreshToken')
             ->once()
-            ->andReturn(['access' => $this->accessToken,'refresh' => $this->refreshToken]);
+            ->andReturn(['access' => $this->accessToken, 'refresh' => $this->refreshToken]);
+
         return $requestNewAccessTokenMock;
     }
 
@@ -257,7 +256,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
      */
     private function getCsvHelperMock()
     {
-        $lines  = file(ASSETS_DIR . 'report.csv');
+        $lines = file(ASSETS_DIR . 'report.csv');
         $csvHelperMock = Mockery::mock(Helper\Csv::class);
         $csvHelperMock
             ->shouldReceive('removeLastLines')
@@ -294,14 +293,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         return $apiClient;
     }
 
-
     private function generateSoapFault($code)
     {
         $message = "an error message {$code}";
         $error = new \stdClass();
         $error->Code = $code;
         $error->Message = $message;
-        $exception = new \SoapFault("Server", "");
+        $exception = new \SoapFault('Server', '');
         $exception->detail = new \stdClass();
         $exception->detail->AdApiFaultDetail = new \stdClass();
         $exception->detail->AdApiFaultDetail->Errors = new \stdClass();

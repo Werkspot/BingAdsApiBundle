@@ -1,12 +1,9 @@
 <?php
 
-
 namespace Tests\Werkspot\BingAdsApiBundle\Tests\Api\Report;
-
 
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportLanguage;
-use BingAds\Reporting\ReportRequest;
 use Werkspot\BingAdsApiBundle\Api\Report\BaseReport;
 
 class BaseReportTest extends \PHPUnit_Framework_TestCase
@@ -37,5 +34,4 @@ class BaseReportTest extends \PHPUnit_Framework_TestCase
         $report->setReportLanguage(ReportLanguage::English);
         $this->assertEquals(ReportLanguage::English, $report->getRequest()->Language);
     }
-
 }

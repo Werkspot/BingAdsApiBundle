@@ -26,8 +26,7 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue('%kernel.cache_dir%')
                     ->cannotBeEmpty()
                 ->end()
-            ->end()
-        ;
+            ->end();
 
         return $treeBuilder;
     }
