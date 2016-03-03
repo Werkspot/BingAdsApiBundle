@@ -2,13 +2,12 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
+use Exception;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\Filesystem\FileSystem;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\HttpStatusCodeException;
-use Exception;
 use ZipArchive;
-
 
 class File
 {
@@ -80,9 +79,9 @@ class File
      * @param null $extractTo
      * @param bool $delete
      *
-     * @return array
-     *
      * @throws Exception
+     *
+     * @return array
      */
     public function unZip($file, $extractTo = null, $delete = true)
     {

@@ -2,8 +2,8 @@
 
 namespace Tests\Werkspot\BingAdsApiBundle\Api\Helper;
 
-use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use PHPUnit_Framework_TestCase;
+use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 
 class CsvTest extends PHPUnit_Framework_TestCase
 {

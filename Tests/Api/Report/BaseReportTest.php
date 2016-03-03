@@ -4,8 +4,8 @@ namespace Tests\Werkspot\BingAdsApiBundle\Tests\Api\Report;
 
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportLanguage;
-use Werkspot\BingAdsApiBundle\Api\Report\BaseReport;
 use PHPUnit_Framework_TestCase;
+use Werkspot\BingAdsApiBundle\Api\Report\BaseReport;
 
 class BaseReportTest extends PHPUnit_Framework_TestCase
 {

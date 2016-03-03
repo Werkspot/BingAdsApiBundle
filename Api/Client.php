@@ -6,8 +6,8 @@ use BingAds\Proxy\ClientProxy;
 use BingAds\Reporting\PollGenerateReportRequest;
 use BingAds\Reporting\ReportTimePeriod;
 use BingAds\Reporting\SubmitGenerateReportRequest;
-use SoapVar;
 use SoapFault;
+use SoapVar;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
@@ -126,7 +126,7 @@ class Client
             $this->apiDetails['client_id'],
             $this->apiDetails['secret'],
             $this->apiDetails['redirect_uri'],
-            new AccessToken(null,$this->apiDetails['refresh_token'])
+            new AccessToken(null, $this->apiDetails['refresh_token'])
         );
 
         $accessToken = $tokens->getAccessToken();

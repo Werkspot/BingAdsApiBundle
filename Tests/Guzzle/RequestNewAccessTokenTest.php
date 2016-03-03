@@ -8,9 +8,9 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Response;
 use Mockery;
+use PHPUnit_Framework_TestCase;
 use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
-use PHPUnit_Framework_TestCase;
 
 class RequestNewAccessTokenTest extends PHPUnit_Framework_TestCase
 {
