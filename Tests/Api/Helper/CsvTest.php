@@ -34,7 +34,7 @@ class CsvTest extends PHPUnit_Framework_TestCase
             '"4/22/2007","account_1","2","group 2","4","0","EUR","0.00","Italy","","Milan","","Milan"',
         ];
         $csvHelper = new Csv();
-        $result = $csvHelper->fixDate($csvArray);
+        $result = $csvHelper->convertDateMDYtoYMD($csvArray);
 
         $expectedResult = [
             "\"1988/11/11\",\"account_1\",\"1\",\"group 1\",\"1\",\"0\",\"EUR\",\"0.00\",\"Italy\",\"\",\"Bolzano\",\"\",\"Bolzano\"\r\n",

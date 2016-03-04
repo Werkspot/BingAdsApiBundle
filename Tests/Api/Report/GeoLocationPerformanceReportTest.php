@@ -244,7 +244,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             ->shouldReceive('removeLastLines')
             ->andReturn($lines)
             ->once()
-            ->shouldReceive('fixDate')
+            ->shouldReceive('convertDateMDYtoYMD')
             ->andReturn($lines)
             ->once();
 

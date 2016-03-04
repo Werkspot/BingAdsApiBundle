@@ -322,7 +322,7 @@ class Client
             $lines = file($file);
             $lines = $this->csvHelper->removeHeaders($lines, $this->config['csv']['fixHeader']['removeColumnHeader'], $report::FILE_HEADERS, $report::COLUMN_HEADERS );
             $lines = $this->csvHelper->removeLastLines($lines);
-            $lines = $this->csvHelper->fixDate($lines);
+            $lines = $this->csvHelper->convertDateMDYtoYMD($lines);
             $fp = fopen($file, 'w');
             fwrite($fp, implode('', $lines));
             fclose($fp);

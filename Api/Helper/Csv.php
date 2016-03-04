@@ -2,6 +2,8 @@
 
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
+use DateTime;
+
 class Csv
 {
     /**
@@ -53,14 +55,14 @@ class Csv
      *
      * @return array
      */
-    public function fixDate(array $lines, $separator = ',', $enclosure = '"')
+    public function convertDateMDYtoYMD(array $lines, $separator = ',', $enclosure = '"')
     {
         foreach ($lines as $key => $line) {
             $columns = str_getcsv($line, $separator);
             $isChanged = false;
             foreach ($columns as $columnKey => $column) {
                 if (preg_match('/^([1-9]|1[0-2])\/([1-9]|[1-2][0-9]|3[0-1])\/[0-9]{4}$/', $column)) {
-                    $date = \DateTime::createFromFormat('m/d/Y', $column);
+                    $date = DateTime::createFromFormat('m/d/Y', $column);
                     $columns[$columnKey] = $date->format('Y/m/d');
                     $isChanged = true;
                 }
