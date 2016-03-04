@@ -1,8 +1,5 @@
 <?php
-
-
 namespace Werkspot\BingAdsApiBundle\Model;
-
 
 class ApiDetails
 {
@@ -94,7 +91,4 @@ class ApiDetails
     {
         return $this->devToken;
     }
-
-
-
 }

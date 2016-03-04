@@ -1,5 +1,4 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
 use Exception;

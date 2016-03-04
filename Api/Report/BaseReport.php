@@ -1,5 +1,4 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Reporting\ReportRequest;

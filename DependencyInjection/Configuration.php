@@ -1,5 +1,4 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;

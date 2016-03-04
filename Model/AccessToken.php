@@ -1,5 +1,4 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Model;
 
 class AccessToken

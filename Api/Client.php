@@ -1,5 +1,4 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Api;
 
 use BingAds\Proxy\ClientProxy;
@@ -13,7 +12,6 @@ use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
-use Werkspot\BingAdsApiBundle\Api\Report\BaseReport;
 use Werkspot\BingAdsApiBundle\Api\Report\ReportInterface;
 use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
@@ -73,6 +71,7 @@ class Client
 
     /**
      * Client constructor.
+     *
      * @param OauthTokenService $oauthTokenService
      * @param ApiDetails $apiDetails
      * @param ClientProxy $clientProxy
@@ -320,7 +319,7 @@ class Client
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
             $lines = file($file);
-            $lines = $this->csvHelper->removeHeaders($lines, $this->config['csv']['fixHeader']['removeColumnHeader'], $report::FILE_HEADERS, $report::COLUMN_HEADERS );
+            $lines = $this->csvHelper->removeHeaders($lines, $this->config['csv']['fixHeader']['removeColumnHeader'], $report::FILE_HEADERS, $report::COLUMN_HEADERS);
             $lines = $this->csvHelper->removeLastLines($lines);
             $lines = $this->csvHelper->convertDateMDYtoYMD($lines);
             $fp = fopen($file, 'w');
