@@ -15,6 +15,7 @@ use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
 use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
+use Werkspot\BingAdsApiBundle\Model\ApiDetails;
 
 class Client
 {
@@ -22,11 +23,6 @@ class Client
      * @var array
      */
     private $config = [];
-
-    /**
-     * @var array
-     */
-    private $apiDetails = [];
 
     /**
      * @var string
@@ -54,6 +50,11 @@ class Client
     private $oauthTokenService;
 
     /**
+     * @var ApiDetails
+     */
+    private $apiDetails;
+
+    /**
      * @var ClientProxy
      */
     private $clientProxy;
@@ -63,11 +64,24 @@ class Client
      */
     private $timeHelper;
 
+    /**
+     * @var File
+     */
     private $fileHelper;
 
-    public function __construct(OauthTokenService $oauthTokenService, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
+    /**
+     * Client constructor.
+     * @param OauthTokenService $oauthTokenService
+     * @param ApiDetails $apiDetails
+     * @param ClientProxy $clientProxy
+     * @param File $file
+     * @param Csv $csv
+     * @param Time $timeHelper
+     */
+    public function __construct(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
     {
         $this->oauthTokenService = $oauthTokenService;
+        $this->apiDetails = $apiDetails;
         $this->clientProxy = $clientProxy;
         $this->fileHelper = $file;
         $this->csvHelper = $csv;
@@ -83,6 +97,11 @@ class Client
         ];
     }
 
+    public function setApiDetails(ApiDetails $apiDetails)
+    {
+        $this->apiDetails = $apiDetails;
+    }
+
     /**
      * Sets the configuration
      *
@@ -94,22 +113,9 @@ class Client
         $this->config['cache_dir'] = $this->config['cache_dir'] . '/' . 'BingAdsApiBundle'; //<-- important for the cache clear function
     }
 
-    public function setApiDetails($refreshToken, $clientId, $secret, $redirectUri, $devToken)
-    {
-        $this->apiDetails = [
-            'client_id' => $clientId,
-            'secret' => $secret,
-            'redirect_uri' => $redirectUri,
-            'refresh_token' => $refreshToken,
-            'dev_token' => $devToken,
-        ];
-
-        return $this;
-    }
-
     public function getRefreshToken()
     {
-        return $this->apiDetails['refresh_token'];
+        return $this->apiDetails->getRefreshToken();
     }
 
     /**
@@ -123,14 +129,14 @@ class Client
     public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
         $tokens = $this->oauthTokenService->refreshToken(
-            $this->apiDetails['client_id'],
-            $this->apiDetails['secret'],
-            $this->apiDetails['redirect_uri'],
-            new AccessToken(null, $this->apiDetails['refresh_token'])
+            $this->apiDetails->getClientId(),
+            $this->apiDetails->getSecret(),
+            $this->apiDetails->getRedirectUri(),
+            new AccessToken(null, $this->apiDetails->getRefreshToken())
         );
 
         $accessToken = $tokens->getAccessToken();
-        $this->apiDetails['refresh_token'] = $tokens->getRefreshToken();
+        $this->apiDetails->setRefreshToken($tokens->getRefreshToken());
 
         $report = $this->report[$name];
         $reportRequest = $report->getRequest($columns, $timePeriod);
@@ -152,15 +158,13 @@ class Client
      */
     private function setProxy($wsdl, $accessToken)
     {
-        $this->proxy = $this->clientProxy->ConstructWithCredentials($wsdl, null, null, $this->apiDetails['dev_token'], $accessToken);
+        $this->proxy = $this->clientProxy->ConstructWithCredentials($wsdl, null, null, $this->apiDetails->getDevToken(), $accessToken);
     }
 
     /**
-     * Get the directory for the bundles cache
-     *
      * @return string
      */
-    public function getCacheDir()
+    private function getCacheDir()
     {
         $fs = new Filesystem();
         if (!$fs->exists($this->config['cache_dir'])) {

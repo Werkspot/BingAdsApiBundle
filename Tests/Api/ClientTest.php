@@ -11,6 +11,7 @@ use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
 use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
+use Werkspot\BingAdsApiBundle\Model\ApiDetails;
 
 class ClientTest extends PHPUnit_Framework_TestCase
 {
@@ -76,6 +77,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
         $apiClient = $this->getApiClient(
             $this->getOauthTokenServiceMock(),
+            new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $clientProxyMock,
             new Helper\File(),
             new Helper\Csv(),
@@ -149,11 +151,10 @@ class ClientTest extends PHPUnit_Framework_TestCase
      *
      * @return Client
      */
-    private function getApiClient(OauthTokenService $requestNewAccessToken, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
+    private function getApiClient(OauthTokenService $requestNewAccessToken, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
     {
-        $apiClient = new Client($requestNewAccessToken, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
+        $apiClient = new Client($requestNewAccessToken, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
         $apiClient->setConfig(['cache_dir' => '/tmp']);
-        $apiClient->setApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken');
 
         return $apiClient;
     }
