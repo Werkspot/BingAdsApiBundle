@@ -7,6 +7,8 @@ use BingAds\Reporting\ReportRequest;
 class BaseReport implements ReportInterface
 {
     const WSDL = 'https://api.bingads.microsoft.com/Api/Advertiser/Reporting/V9/ReportingService.svc?singleWsdl';
+    const FILE_HEADERS = 10;
+    const COLUMN_HEADERS = 1;
 
     protected $reportRequest;
 

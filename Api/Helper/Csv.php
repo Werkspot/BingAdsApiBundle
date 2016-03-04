@@ -4,20 +4,19 @@ namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
 class Csv
 {
-    const FILE_HEADERS = 10;
-    const COLUMN_HEADERS = 1;
-
     /**
      * @param array $lines
      * @param bool $includingColumnHeaders
+     * @param int $fileHeaders
+     * @param int $columnHeaders
      *
      * @return array
      */
-    public function removeHeaders(array $lines, $includingColumnHeaders = true)
+    public function removeHeaders(array $lines, $includingColumnHeaders = true, $fileHeaders = 10, $columnHeaders = 1)
     {
         $lines = array_values($lines);
 
-        $removeLines = ($includingColumnHeaders) ? (self::FILE_HEADERS + self::COLUMN_HEADERS) : self::FILE_HEADERS;
+        $removeLines = ($includingColumnHeaders) ? ($fileHeaders + $columnHeaders) : $fileHeaders;
         for ($i = 0; $i < ($removeLines); ++$i) {
             unset($lines[$i]);
         }

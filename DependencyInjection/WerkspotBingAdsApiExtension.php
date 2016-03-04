@@ -26,7 +26,7 @@ class WerkspotBingAdsApiExtension extends Extension
         $loader->load('services.yml');
 
         // Once the services definition are read, get your service and add a method call to setConfig()
-        $sillyServiceDefintion = $container->getDefinition('werkspot.bing_ads_api_client');
+        $sillyServiceDefintion = $container->getDefinition('werkspot.bing_ads.api.client');
         $sillyServiceDefintion->addMethodCall('setConfig', [$config]);
     }
 }

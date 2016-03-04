@@ -4,7 +4,7 @@ namespace Werkspot\BingAdsApiBundle\Api\Helper;
 
 use Exception;
 use GuzzleHttp\ClientInterface;
-use Symfony\Component\Filesystem\FileSystem;
+use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\HttpStatusCodeException;
 use ZipArchive;
@@ -17,14 +17,14 @@ class File
     private $guzzleClient;
 
     /**
-     * @var FileSystem
+     * @var Filesystem
      */
-    private $fileSystem;
+    private $filesystem;
 
     public function __construct(ClientInterface $guzzleClient = null)
     {
         $this->guzzleClient = $guzzleClient;
-        $this->fileSystem = new FileSystem();
+        $this->filesystem = new Filesystem();
     }
 
     /**
@@ -44,13 +44,13 @@ class File
             $destination = $this->download($source, $destination);
         } else {
             if ($destination) {
-                $this->fileSystem->copy($source, $destination);
+                $this->filesystem->copy($source, $destination);
             } else {
                 $destination = $source;
             }
         }
 
-        if (!$this->fileSystem->exists($destination)) {
+        if (!$this->filesystem->exists($destination)) {
             return false;
         }
 
@@ -98,7 +98,7 @@ class File
         $zip->extractTo($zipDir);
         $zip->close();
         if ($delete) {
-            $this->fileSystem->remove($file);
+            $this->filesystem->remove($file);
         }
 
         return $files;

@@ -26,6 +26,14 @@ class Configuration implements ConfigurationInterface
                     ->defaultValue('%kernel.cache_dir%')
                     ->cannotBeEmpty()
                 ->end()
+                ->scalarNode('csv')
+                    ->scalarNode('fixHeader')
+                        ->booleanNode('removeColumnHeader')
+                            ->defaultFalse()
+                        ->end()
+                    ->end()
+                ->end()
+
             ->end();
 
         return $treeBuilder;

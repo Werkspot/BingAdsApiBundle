@@ -1,3 +1,10 @@
+parameters:
+  bing.refresh_token: ""
+  bing.client_id: ""
+  bing.secret: ""
+  bing.redirect_uri: ""
+  bing.dev_token: ""
+
 services:
   werkspot.bing_ads.api.client:
     class: Werkspot\BingAdsApiBundle\Api\Client
@@ -11,8 +18,8 @@ services:
 
   bing.client.proxy:
     class: BingAds\Proxy\ClientProxy
-      arguments:
-            - ~
+    arguments:
+      - ~
 
   werkspot.bing_ads.api.client.helper.file:
     class: Werkspot\BingAdsApiBundle\Api\Helper\File
@@ -36,9 +43,9 @@ services:
   werkspot.bing_ads.api.model.api_details:
     class: Werkspot\BingAdsApiBundle\Model\ApiDetails
     arguments:
-      - "%bing.refreshToken%"
-      - "%bing.clientId%"
+      - "%%bing.refresh_token%"
+      - "%bing.client_id%"
       - "%bing.secret%"
-      - "%bing.redirectUri%"
-      - "%bing.devToken%"
+      - "%bing.redirect_uri%"
+      - "%bing.dev_token%"
 

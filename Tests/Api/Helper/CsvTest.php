@@ -80,7 +80,7 @@ class CsvTest extends PHPUnit_Framework_TestCase
         $csvHelper = new Csv();
         $result = $csvHelper->removeHeaders($csvArray);
 
-        $this->assertEquals((count($csvArray) - (Csv::FILE_HEADERS + Csv::COLUMN_HEADERS)), count($result));
+        $this->assertEquals((count($csvArray) - 11), count($result));
     }
 
     public function testRemoveFileHeadersAsCount()
@@ -89,7 +89,7 @@ class CsvTest extends PHPUnit_Framework_TestCase
         $csvHelper = new Csv();
         $result = $csvHelper->removeHeaders($csvArray, false);
 
-        $this->assertEquals((count($csvArray) - (Csv::FILE_HEADERS)), count($result));
+        $this->assertEquals((count($csvArray) - 10), count($result));
     }
 
     public function testArrayToCsvLine()

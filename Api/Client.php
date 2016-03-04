@@ -13,6 +13,8 @@ use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
+use Werkspot\BingAdsApiBundle\Api\Report\BaseReport;
+use Werkspot\BingAdsApiBundle\Api\Report\ReportInterface;
 use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
 use Werkspot\BingAdsApiBundle\Model\AccessToken;
 use Werkspot\BingAdsApiBundle\Model\ApiDetails;
@@ -35,7 +37,7 @@ class Client
     private $proxy;
 
     /**
-     * @var string
+     * @var array
      */
     public $report;
 
@@ -111,6 +113,7 @@ class Client
     {
         $this->config = $config;
         $this->config['cache_dir'] = $this->config['cache_dir'] . '/' . 'BingAdsApiBundle'; //<-- important for the cache clear function
+        $this->config['csv']['fixHeader']['removeColumnHeader'] = true; //-- fix till i know how to do this
     }
 
     public function getRefreshToken()
@@ -141,7 +144,7 @@ class Client
         $report = $this->report[$name];
         $reportRequest = $report->getRequest($columns, $timePeriod);
         $this->setProxy($report::WSDL, $accessToken);
-        $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}");
+        $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}", $report);
 
         if ($fileLocation) {
             $this->moveFirstFile($fileLocation);
@@ -183,14 +186,14 @@ class Client
      *
      * @return string
      */
-    private function getFilesFromReportRequest($reportRequest, $name, $downloadFile)
+    private function getFilesFromReportRequest($reportRequest, $name, $downloadFile, ReportInterface $report)
     {
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
         $zipFile = $this->fileHelper->getFile($reportDownloadUrl, $downloadFile);
         $this->files = $this->fileHelper->unZip($zipFile);
-        $this->fixFile();
+        $this->fixFile($report);
 
         return $this->files;
     }
@@ -312,11 +315,12 @@ class Client
      *
      * @return self
      */
-    private function fixFile(array $files = null)
+    private function fixFile(ReportInterface $report, array $files = null)
     {
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
             $lines = file($file);
+            $lines = $this->csvHelper->removeHeaders($lines, $this->config['csv']['fixHeader']['removeColumnHeader'], $report::FILE_HEADERS, $report::COLUMN_HEADERS );
             $lines = $this->csvHelper->removeLastLines($lines);
             $lines = $this->csvHelper->fixDate($lines);
             $fp = fopen($file, 'w');

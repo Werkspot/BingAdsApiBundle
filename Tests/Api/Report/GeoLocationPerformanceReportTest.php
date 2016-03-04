@@ -238,6 +238,9 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
         $lines = file(ASSETS_DIR . 'report.csv');
         $csvHelperMock = Mockery::mock(Helper\Csv::class);
         $csvHelperMock
+            ->shouldReceive('removeHeaders')
+            ->andReturn($lines)
+            ->once()
             ->shouldReceive('removeLastLines')
             ->andReturn($lines)
             ->once()
