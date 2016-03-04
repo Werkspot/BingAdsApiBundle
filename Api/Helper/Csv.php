@@ -77,7 +77,7 @@ class Csv
     /**
      * @param array $array
      * @param string $separator
-     * @param null $enclosure
+     * @param null|string $enclosure
      *
      * @return string
      */

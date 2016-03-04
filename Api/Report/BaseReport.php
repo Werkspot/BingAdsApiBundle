@@ -64,7 +64,7 @@ class BaseReport implements ReportInterface
      * @param array|null $columns
      * @param string|null $timePeriod (See BingAds SDK documentation)
      *
-     * @return mixed
+     * @return ReportRequest
      */
     public function getRequest(array $columns = null, $timePeriod = null)
     {

@@ -12,6 +12,8 @@ use BingAds\Reporting\ReportTime;
 use Mockery;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use stdClass;
+use SoapFault;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -276,16 +278,20 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
         return $apiClient;
     }
 
+    /**
+     * @param $code
+     * @return SoapFault
+     */
     private function generateSoapFault($code)
     {
         $message = "an error message {$code}";
-        $error = new \stdClass();
+        $error = new stdClass();
         $error->Code = $code;
         $error->Message = $message;
-        $exception = new \SoapFault('Server', '');
-        $exception->detail = new \stdClass();
-        $exception->detail->AdApiFaultDetail = new \stdClass();
-        $exception->detail->AdApiFaultDetail->Errors = new \stdClass();
+        $exception = new SoapFault('Server', '');
+        $exception->detail = new stdClass();
+        $exception->detail->AdApiFaultDetail = new stdClass();
+        $exception->detail->AdApiFaultDetail->Errors = new stdClass();
         $exception->detail->AdApiFaultDetail->Errors->AdApiError = [$error];
 
         return $exception;

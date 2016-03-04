@@ -5,6 +5,7 @@ namespace Test\Werkspot\BingAdsApiBundle\Api;
 use BingAds\Bulk\ReportTimePeriod;
 use BingAds\Proxy\ClientProxy;
 use Mockery;
+use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
@@ -61,7 +62,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return Mockery\MockInterface
+     * @return MockInterface
      */
     private function runClientSoapException($code)
     {

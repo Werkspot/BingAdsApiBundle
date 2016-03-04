@@ -3,8 +3,10 @@ namespace Werkspot\BingAdsApiBundle\Api;
 
 use BingAds\Proxy\ClientProxy;
 use BingAds\Reporting\PollGenerateReportRequest;
+use BingAds\Reporting\ReportRequest;
 use BingAds\Reporting\ReportTimePeriod;
 use BingAds\Reporting\SubmitGenerateReportRequest;
+use Exception;
 use SoapFault;
 use SoapVar;
 use Symfony\Component\Filesystem\Filesystem;
@@ -60,14 +62,19 @@ class Client
     private $clientProxy;
 
     /**
-     * @var Time
-     */
-    private $timeHelper;
-
-    /**
      * @var File
      */
     private $fileHelper;
+
+    /**
+     * @var Csv
+     */
+    private $csvHelper;
+
+    /**
+     * @var Time
+     */
+    private $timeHelper;
 
     /**
      * Client constructor.
@@ -124,7 +131,7 @@ class Client
      * @param array $columns
      * @param string $name
      * @param $timePeriod
-     * @param null $fileLocation
+     * @param null|string $fileLocation
      *
      * @return array|string
      */
@@ -177,15 +184,16 @@ class Client
     }
 
     /**
-     * @param $reportRequest
-     * @param $name
-     * @param $downloadFile
+     * @param ReportRequest $reportRequest
+     * @param string $name
+     * @param string $downloadFile
+     * @param ReportInterface $report
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return string
      */
-    private function getFilesFromReportRequest($reportRequest, $name, $downloadFile, ReportInterface $report)
+    private function getFilesFromReportRequest(ReportRequest $reportRequest, $name, $downloadFile, ReportInterface $report)
     {
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
@@ -294,7 +302,7 @@ class Client
      * of minutes. You should stop polling and try again later if the request
      * is taking longer than an hour.
      *
-     * @param $reportRequestId
+     * @param string $reportRequestId
      *
      * @return string ReportRequestStatus
      */

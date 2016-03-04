@@ -75,8 +75,8 @@ class File
 
     /**
      * @param string $file zipFile we want to open
-     * @param null $extractTo
-     * @param bool $delete
+     * @param null|string $extractTo
+     * @param true|bool $delete
      *
      * @throws Exception
      *
