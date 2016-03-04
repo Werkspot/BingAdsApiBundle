@@ -90,39 +90,6 @@ class ClientTest extends PHPUnit_Framework_TestCase
     /**
      * @return Mockery\MockInterface
      */
-    private function getClientProxyMock($reportStatus = 'Success')
-    {
-        $clientProxyMock = Mockery::mock(ClientProxy::class);
-        $clientProxyMock
-            ->shouldReceive('ConstructWithCredentials')
-            ->andReturnSelf()
-            ->once()
-            ->shouldReceive('GetNamespace')
-            ->between(1, 48)
-            ->andReturn('Namespace')
-            ->shouldReceive('GetService')
-            ->between(2, 49)
-            ->andReturnSelf()
-            ->shouldReceive('SubmitGenerateReport')
-            ->between(1, 48)
-            ->andReturnSelf()
-            ->shouldReceive('PollGenerateReport')
-            ->between(1, 48)
-            ->andReturnSelf();
-
-        $status = new \stdClass();
-        $status->Status = $reportStatus;
-        $status->ReportDownloadUrl = 'http://example.com/download.zip';
-
-        $clientProxyMock->ReportRequestId = 'reportID';
-        $clientProxyMock->ReportRequestStatus = $status;
-
-        return $clientProxyMock;
-    }
-
-    /**
-     * @return Mockery\MockInterface
-     */
     private function getOauthTokenServiceMock()
     {
         $oauthTokenServiceMock = Mockery::mock(OauthTokenService::class);

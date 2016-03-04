@@ -191,7 +191,7 @@ class Client
      *
      * @throws Exception
      *
-     * @return string
+     * @return array
      */
     private function getFilesFromReportRequest(ReportRequest $reportRequest, $name, $downloadFile, ReportInterface $report)
     {

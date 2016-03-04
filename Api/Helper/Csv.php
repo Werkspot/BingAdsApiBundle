@@ -85,8 +85,9 @@ class Csv
     {
         $csvStr = '';
 
-        for ($i = 0; $i < count($array); ++$i) {
-            if ($enclosure) {
+        $length = count($array);
+        for ($i = 0; $i < $length; ++$i) {
+            if ($enclosure !== null) {
                 $csvStr .= $enclosure . str_replace($enclosure, $enclosure . $enclosure, $array[$i]) . $enclosure;
             } else {
                 $csvStr .= $array[$i];

@@ -14,7 +14,7 @@ class ReportRequestErrorException extends Exception
     private $reportRequestStatus;
 
     /**
-     * @var \Exception
+     * @var string
      */
     private $reportRequestId;
 
@@ -40,7 +40,7 @@ class ReportRequestErrorException extends Exception
     }
 
     /**
-     * @return \Exception
+     * @return string
      */
     public function getReportRequestId()
     {
