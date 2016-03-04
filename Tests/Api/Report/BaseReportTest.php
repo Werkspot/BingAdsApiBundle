@@ -13,7 +13,7 @@ class BaseReportTest extends PHPUnit_Framework_TestCase
     {
         $report = new BaseReport();
         $this->assertNull($report->getRequest()->Format);
-
+        /* @var string (See BingAds SDK documentation) */
         $report->setFormat(ReportFormat::Csv);
         $this->assertEquals(ReportFormat::Csv, $report->getRequest()->Format);
     }

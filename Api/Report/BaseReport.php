@@ -20,6 +20,11 @@ class BaseReport implements ReportInterface
         $this->createReportRequest();
     }
 
+    /**
+     * @param $format
+     *
+     * @return $this
+     */
     public function setFormat($format)
     {
         $this->reportRequest->Format = $format;
@@ -58,7 +63,7 @@ class BaseReport implements ReportInterface
 
     /**
      * @param array|null $columns
-     * @param string|null $timePeriod
+     * @param string|null $timePeriod (See BingAds SDK documentation)
      *
      * @return mixed
      */

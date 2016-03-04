@@ -6,7 +6,7 @@ interface ReportInterface
 {
     /**
      * @param array   $columns
-     * @param string  $timePeriod
+     * @param string  $timePeriod (See BingAds SDK documentation)
      *
      * @return ReportRequest
      */

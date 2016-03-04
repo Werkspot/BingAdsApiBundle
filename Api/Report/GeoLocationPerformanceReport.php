@@ -34,6 +34,11 @@ class GeoLocationPerformanceReport extends BaseReport
         return $this->reportRequest;
     }
 
+    /**
+     * @param string $aggregation (See BingAds SDK documentation)
+     *
+     * @return $this
+     */
     public function setAggregation($aggregation)
     {
         $this->reportRequest->Aggregation = $aggregation;

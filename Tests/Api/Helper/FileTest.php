@@ -91,7 +91,7 @@ class FileTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals($files, [ASSETS_DIR . '0039202.csv']);
 
-        //-- Clean Files
+        //-- Remove the files created by this test
         foreach ($files as $file) {
             $this->fileSystem->remove($file);
         }
