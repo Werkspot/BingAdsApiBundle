@@ -43,7 +43,7 @@ services:
   werkspot.bing_ads.api.model.api_details:
     class: Werkspot\BingAdsApiBundle\Model\ApiDetails
     arguments:
-      - "%%bing.refresh_token%"
+      - "%bing.refresh_token%"
       - "%bing.client_id%"
       - "%bing.secret%"
       - "%bing.redirect_uri%"

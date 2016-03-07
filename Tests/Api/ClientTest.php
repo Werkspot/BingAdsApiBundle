@@ -111,7 +111,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param OauthTokenService $requestNewAccessToken
+     * @param OauthTokenService $oauthTokenService
      * @param ClientProxy $clientProxy
      * @param Helper\File $fileHelper
      * @param Helper\Csv $csvHelper
@@ -119,9 +119,9 @@ class ClientTest extends PHPUnit_Framework_TestCase
      *
      * @return Client
      */
-    private function getApiClient(OauthTokenService $requestNewAccessToken, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
+    private function getApiClient(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
     {
-        $apiClient = new Client($requestNewAccessToken, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
+        $apiClient = new Client($oauthTokenService, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
         $apiClient->setConfig(['cache_dir' => '/tmp']);
 
         return $apiClient;
