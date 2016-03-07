@@ -1,17 +1,20 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Api\Report;
 
-
-use BingAds\Reporting\NonHourlyReportAggregation;
-use BingAds\Reporting\GeoLocationPerformanceReportRequest;
 use BingAds\Reporting\AccountThroughAdGroupReportScope;
+use BingAds\Reporting\GeoLocationPerformanceReportRequest;
+use BingAds\Reporting\NonHourlyReportAggregation;
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
 
-class GeoLocationPerformanceReport extends BaseReport implements ReportInterface
+class GeoLocationPerformanceReport extends BaseReport
 {
     const NAME = 'GeoLocationPerformanceReportRequest';
+
+    /**
+     * @var GeoLocationPerformanceReportRequest
+     */
+    protected $reportRequest;
 
     protected function createReportRequest()
     {
@@ -25,21 +28,34 @@ class GeoLocationPerformanceReport extends BaseReport implements ReportInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @param string $aggregation (See BingAds SDK documentation)
      */
-    public function getRequest(array $columns, $timePeriod)
-    {
-        $this->reportRequest->Time->PredefinedTime = $timePeriod;
-        $this->reportRequest->Columns = $columns;
-
-        return $this->reportRequest;
-    }
-
     public function setAggregation($aggregation)
     {
         $this->reportRequest->Aggregation = $aggregation;
-
-        return $this;
     }
 
+    /**
+     * @param array $columns
+     */
+    public function setColumns(array $columns)
+    {
+        $this->reportRequest->Columns = $columns;
+    }
+
+    /**
+     * @param string $timePeriod (See BingAds SDK documentation)
+     */
+    public function setTimePeriod($timePeriod)
+    {
+        $this->reportRequest->Time->PredefinedTime = $timePeriod;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequest()
+    {
+        return $this->reportRequest;
+    }
 }

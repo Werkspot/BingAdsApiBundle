@@ -1,10 +1,10 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Guzzle;
 
 use GuzzleHttp\ClientInterface;
+use Werkspot\BingAdsApiBundle\Model\AccessToken;
 
-class RequestNewAccessToken
+class OauthTokenService
 {
     private $httpClient;
 
@@ -16,8 +16,15 @@ class RequestNewAccessToken
         $this->httpClient = $httpClient;
     }
 
-
-    public function get($clientId, $clientSecret, $redirectUri, $refreshToken)
+    /**
+     * @param string $clientId
+     * @param string $clientSecret
+     * @param string $redirectUri
+     * @param AccessToken $accessToken
+     *
+     * @return AccessToken
+     */
+    public function refreshToken($clientId, $clientSecret, $redirectUri, AccessToken $accessToken)
     {
         $data = [
             'headers' => [
@@ -28,20 +35,14 @@ class RequestNewAccessToken
                 'client_secret' => $clientSecret,
                 'grant_type' => self::GRANTTYPE,
                 'redirect_uri' => $redirectUri,
-                'refresh_token' => $refreshToken,
+                'refresh_token' => $accessToken->getRefreshToken(),
             ]
         ];
         $response = $this->httpClient->request('POST', self::URL, $data);
 
         $json = json_decode($response->getBody(), true);
-        $tokens = [
-            'access' => $json['access_token'],
-            'refresh' => $json['refresh_token'],
-        ];
+        $tokens = new AccessToken($json['access_token'], $json['refresh_token']);
 
         return $tokens;
-
     }
-
-
 }

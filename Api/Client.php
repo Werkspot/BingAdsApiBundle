@@ -1,29 +1,30 @@
 <?php
-
 namespace Werkspot\BingAdsApiBundle\Api;
 
+use BingAds\Proxy\ClientProxy;
+use BingAds\Reporting\PollGenerateReportRequest;
+use BingAds\Reporting\ReportRequest;
+use BingAds\Reporting\ReportTimePeriod;
+use BingAds\Reporting\SubmitGenerateReportRequest;
+use Exception;
+use SoapFault;
+use SoapVar;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use BingAds\Reporting\SubmitGenerateReportRequest;
-use BingAds\Reporting\PollGenerateReportRequest;
-use BingAds\Proxy\ClientProxy;
-use SoapVar;
-use Werkspot\BingAdsApiBundle\Api\Exceptions;
-use Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken;
+use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
+use Werkspot\BingAdsApiBundle\Api\Helper\File;
+use Werkspot\BingAdsApiBundle\Api\Helper\Time;
+use Werkspot\BingAdsApiBundle\Api\Report\ReportInterface;
+use Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService;
+use Werkspot\BingAdsApiBundle\Model\AccessToken;
+use Werkspot\BingAdsApiBundle\Model\ApiDetails;
 
 class Client
 {
     /**
-     *
      * @var array
      */
     private $config = [];
-
-    /**
-     * @var array
-     */
-    private $apiDetails = [];
-
 
     /**
      * @var string
@@ -31,42 +32,82 @@ class Client
     private $fileName;
 
     /**
-     *
      * @var ClientProxy
      */
     private $proxy;
 
     /**
-     *
-     * @var string
+     * @var array
      */
     public $report;
 
     /**
-     *
      * @var string
      */
     private $files;
 
     /**
-     * @var RequestNewAccessToken
+     * @var OauthTokenService
      */
-    private $requestNewAccessToken;
+    private $oauthTokenService;
 
+    /**
+     * @var ApiDetails
+     */
+    private $apiDetails;
 
-    public function __construct(RequestNewAccessToken $requestNewAccessToken)
+    /**
+     * @var ClientProxy
+     */
+    private $clientProxy;
+
+    /**
+     * @var File
+     */
+    private $fileHelper;
+
+    /**
+     * @var Csv
+     */
+    private $csvHelper;
+
+    /**
+     * @var Time
+     */
+    private $timeHelper;
+
+    /**
+     * Client constructor.
+     *
+     * @param OauthTokenService $oauthTokenService
+     * @param ApiDetails $apiDetails
+     * @param ClientProxy $clientProxy
+     * @param File $file
+     * @param Csv $csv
+     * @param Time $timeHelper
+     */
+    public function __construct(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
     {
-        $this->requestNewAccessToken = $requestNewAccessToken;
+        $this->oauthTokenService = $oauthTokenService;
+        $this->apiDetails = $apiDetails;
+        $this->clientProxy = $clientProxy;
+        $this->fileHelper = $file;
+        $this->csvHelper = $csv;
+        $this->timeHelper = $timeHelper;
 
-        ini_set("soap.wsdl_cache_enabled", "0");
-        ini_set("soap.wsdl_cache_ttl", "0");
+        ini_set('soap.wsdl_cache_enabled', '0');
+        ini_set('soap.wsdl_cache_ttl', '0');
 
-        $this->fileName = "report.zip";
+        $this->fileName = 'report.zip';
 
         $this->report = [
             'GeoLocationPerformanceReport' => new Report\GeoLocationPerformanceReport(),
         ];
+    }
 
+    public function setApiDetails(ApiDetails $apiDetails)
+    {
+        $this->apiDetails = $apiDetails;
     }
 
     /**
@@ -78,57 +119,48 @@ class Client
     {
         $this->config = $config;
         $this->config['cache_dir'] = $this->config['cache_dir'] . '/' . 'BingAdsApiBundle'; //<-- important for the cache clear function
-    }
-
-    public function setApiDetails($refreshToken, $clientId, $secret, $redirectUri, $devToken)
-    {
-        $this->apiDetails = [
-            'client_id' => $clientId,
-            'secret' => $secret,
-            'redirect_uri' => $redirectUri,
-            'refresh_token' => $refreshToken,
-            'dev_token' => $devToken,
-        ];
+        $this->config['csv']['fixHeader']['removeColumnHeader'] = true; //-- fix till i know how to do this
     }
 
     public function getRefreshToken()
     {
-        return $this->apiDetails['refresh_token'];
+        return $this->apiDetails->getRefreshToken();
     }
 
     /**
      * @param array $columns
      * @param string $name
      * @param $timePeriod
-     * @param null $fileLocation
+     * @param null|string $fileLocation
      *
      * @return array|string
      */
     public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
-        $tokens = $this->requestNewAccessToken->get(
-            $this->apiDetails['client_id'],
-            $this->apiDetails['secret'],
-            $this->apiDetails['redirect_uri'],
-            $this->apiDetails['refresh_token']
+        $tokens = $this->oauthTokenService->refreshToken(
+            $this->apiDetails->getClientId(),
+            $this->apiDetails->getSecret(),
+            $this->apiDetails->getRedirectUri(),
+            new AccessToken(null, $this->apiDetails->getRefreshToken())
         );
-        $accessToken = $tokens['access'];
-        $this->apiDetails['refresh_token'] = $tokens['refresh'];
+
+        $accessToken = $tokens->getAccessToken();
+        $this->apiDetails->setRefreshToken($tokens->getRefreshToken());
 
         $report = $this->report[$name];
-        $reportRequest = $report->getRequest($columns, $timePeriod);
+        $report->setTimePeriod($timePeriod);
+        $report->setColumns($columns);
+        $reportRequest = $report->getRequest();
         $this->setProxy($report::WSDL, $accessToken);
+        $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}", $report);
 
-        $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}");
-
-        if ($fileLocation) {
+        if ($fileLocation !== null) {
             $this->moveFirstFile($fileLocation);
+
             return $fileLocation;
         } else {
             return $files;
         }
-
-
     }
 
     /**
@@ -137,15 +169,13 @@ class Client
      */
     private function setProxy($wsdl, $accessToken)
     {
-        $this->proxy = ClientProxy::ConstructWithCredentials($wsdl, null, null, $this->apiDetails['dev_token'], $accessToken);
+        $this->proxy = $this->clientProxy->ConstructWithCredentials($wsdl, null, null, $this->apiDetails->getDevToken(), $accessToken);
     }
 
     /**
-     * Get the directory for the bundles cache
-     *
      * @return string
      */
-    public function getCacheDir()
+    private function getCacheDir()
     {
         $fs = new Filesystem();
         if (!$fs->exists($this->config['cache_dir'])) {
@@ -156,28 +186,30 @@ class Client
     }
 
     /**
-     * @param $reportRequest
-     * @param $name
-     * @param $downloadFile
+     * @param ReportRequest $reportRequest
+     * @param string $name
+     * @param string $downloadFile
+     * @param ReportInterface $report
      *
-     * @return string
+     * @throws Exception
      *
-     * @throws \Exception
+     * @return array
      */
-    private function getFilesFromReportRequest($reportRequest, $name, $downloadFile)
+    private function getFilesFromReportRequest(ReportRequest $reportRequest, $name, $downloadFile, ReportInterface $report)
     {
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
-        $zipFile = $this->downloadFile($reportDownloadUrl, $downloadFile);
-        $this->openZipFile($zipFile);
-        $this->fixFile();
+        $zipFile = $this->fileHelper->getFile($reportDownloadUrl, $downloadFile);
+        if ($zipFile !== false) {
+            $this->files = $this->fileHelper->unZip($zipFile);
+            $this->fixFile($report);
+        }
 
         return $this->files;
     }
 
     /**
-     *
      * SubmitGenerateReport helper method calls the corresponding Bing Ads service operation
      * to request the report identifier. The identifier is used to check report generation status
      * before downloading the report.
@@ -190,17 +222,16 @@ class Client
     private function submitGenerateReport($report, $name)
     {
         $request = new SubmitGenerateReportRequest();
-        $request->ReportRequest = $this->getReportRequest($report, $name);
-
         try {
+            $request->ReportRequest = $this->getReportRequest($report, $name);
+
             return $this->proxy->GetService()->SubmitGenerateReport($request)->ReportRequestId;
-        } catch (\SoapFault $e) {
+        } catch (SoapFault $e) {
             $this->parseSoapFault($e);
         }
     }
 
     /**
-     *
      * @param mixed  $report
      * @param string $name
      *
@@ -209,15 +240,11 @@ class Client
     private function getReportRequest($report, $name)
     {
         $name = "{$name}Request";
-        try {
-            return new  SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
-        } catch (\SoapFault $e) {
-            $this->parseSoapFault($e);
-        }
+
+        return new SoapVar($report, SOAP_ENC_OBJECT, $name, $this->proxy->GetNamespace());
     }
 
     /**
-     *
      * Check if the report is ready for download
      * if not wait 10 sec and retry. (up to 6,5 hour)
      * After 30 tries check every 1 minute
@@ -229,60 +256,57 @@ class Client
      * @param int     $count
      * @param int     $maxCount
      * @param int     $sleep
-     * @param boolean $incrementTime
-     *
-     * @return string
+     * @param bool $incrementTime
      *
      * @throws Exceptions\ReportRequestErrorException
      * @throws Exceptions\RequestTimeoutException
+     *
+     * @return string
      */
-    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 0, $sleep = 10, $incrementTime = true)
+    private function waitForStatus($reportRequestId, $count = 1, $maxCount = 48, $sleep = 10, $incrementTime = true)
     {
         if ($count > $maxCount) {
             throw new Exceptions\RequestTimeoutException("The request is taking longer than expected.\nSave the report ID ({$reportRequestId}) and try again later.");
         }
 
         $reportRequestStatus = $this->pollGenerateReport($reportRequestId);
-        if ($reportRequestStatus->Status == "Pending") {
-            $count++;
-            sleep($sleep);
+        if ($reportRequestStatus->Status == 'Pending') {
+            ++$count;
+            $this->timeHelper->sleep($sleep);
             if ($incrementTime) {
                 switch ($count) {
                     case 31: // after 5 minutes
-                        $sleep = (1*60);
+                        $sleep = (1 * 60);
                         break;
                     case 35: // after 10 minutes
-                        $sleep = (5*60);
+                        $sleep = (5 * 60);
                         break;
                     case 40: // after 30 minutes
-                        $sleep = (15*60);
+                        $sleep = (15 * 60);
                         break;
                     case 44: // after 1,5 hours
-                        $sleep = (30*60);
+                        $sleep = (30 * 60);
                         break;
                 }
-
             }
             $reportRequestStatus = $this->waitForStatus($reportRequestId, $count, $maxCount, $sleep, $incrementTime);
         }
 
-        if ($reportRequestStatus->Status == "Error") {
-            throw new Exceptions\ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId );
+        if ($reportRequestStatus->Status == 'Error') {
+            throw new Exceptions\ReportRequestErrorException("The request failed. Try requesting the report later.\nIf the request continues to fail, contact support.", $reportRequestStatus->Status, $reportRequestId);
         }
 
         return $reportRequestStatus;
-
     }
 
     /**
-     *
      * Check the status of the report request. The guidance of how often to poll
      * for status is from every five to 15 minutes depending on the amount
      * of data being requested. For smaller reports, you can poll every couple
      * of minutes. You should stop polling and try again later if the request
      * is taking longer than an hour.
      *
-     * @param $reportRequestId
+     * @param string $reportRequestId
      *
      * @return string ReportRequestStatus
      */
@@ -290,7 +314,6 @@ class Client
     {
         $request = new PollGenerateReportRequest();
         $request->ReportRequestId = $reportRequestId;
-
         try {
             return $this->proxy->GetService()->PollGenerateReport($request)->ReportRequestStatus;
         } catch (SoapFault $e) {
@@ -299,59 +322,18 @@ class Client
     }
 
     /**
-     *
-     * @param string $url Url we want to download from
-     * @param string $localFile local file we want to store the data including path (usually $this->cacheDir)
-     *
-     * @return string $localFile
-     */
-    private function downloadFile($url, $localFile)
-    {
-        file_put_contents($localFile, fopen($url, 'r'));
-        return $localFile;
-    }
-
-    /**
-     * Open zip file
-     *
-     * @param string $file zipFile we want to open
-     *
-     * @return array of extracted files
-     */
-    private function openZipFile($file, $delete = false)
-    {
-        $zipDir = dirname($file);
-        $zip = new \ZipArchive();
-        $zip->open($file);
-        $files = [];
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $stat = $zip->statIndex($i);
-            $files[] = "{$zipDir}/{$stat['name']}";
-        }
-        $zip->extractTo($zipDir);
-        $zip->close();
-        if ($delete) {
-            $fs = new Filesystem();
-            $fs->remove($file);
-        }
-        $this->files = $files;
-
-        return $this;
-    }
-
-    /**
      * @param array|null $files
-     * @param array|null $options
      *
      * @return self
      */
-    private function fixFile(array $files = null, array $options = null)
+    private function fixFile(ReportInterface $report, array $files = null)
     {
         $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
             $lines = file($file);
-            $lines = $this->removeLastLines($lines);
-            $lines = $this->fixDate($lines);
+            $lines = $this->csvHelper->removeHeaders($lines, $this->config['csv']['fixHeader']['removeColumnHeader'], $report::FILE_HEADERS, $report::COLUMN_HEADERS);
+            $lines = $this->csvHelper->removeLastLines($lines);
+            $lines = $this->csvHelper->convertDateMDYtoYMD($lines);
             $fp = fopen($file, 'w');
             fwrite($fp, implode('', $lines));
             fclose($fp);
@@ -361,77 +343,6 @@ class Client
     }
 
     /**
-     *
-     * @param array $lines
-     * @param int   $noOfLinesToRemove
-     *
-     * @return array
-     */
-    private function removeLastLines(array $lines, $noOfLinesToRemove = 1)
-    {
-        $totalLines = count($lines);
-        $removeFrom = $totalLines - $noOfLinesToRemove;
-
-        for( $i = $removeFrom; $i < $totalLines; $i++ ) {
-            unset($lines[$i]);
-        }
-        return $lines;
-    }
-
-    /**
-     * @param array $lines
-     * @param string $separator
-     * @param string $enclosure
-     *
-     * @return array
-     */
-    private function fixDate(array $lines, $separator = ',', $enclosure = '"')
-    {
-        foreach ($lines as $key => $line) {
-            $columns = str_getcsv($line, $separator );
-            $isChanged = false;
-            foreach ($columns as $columnKey => $column)
-            {
-                if (preg_match('/^([1-9]|1[0-2])\/([1-9]|[1-2][0-9]|3[0-1])\/20[0-9]{2}$/', $column))
-                {
-                    $date = \DateTime::createFromFormat('m/d/Y', $column);
-                    $columns[$columnKey] = $date->format('Y/m/d');
-                    $isChanged = true;
-                }
-            }
-            if ($isChanged){
-                $lines[$key] = $this->arrayToCsvLine($columns, $separator, $enclosure);
-            }
-        }
-        return $lines;
-    }
-
-    /**
-     * @param array $array
-     * @param string $separator
-     * @param null $enclosure
-     *
-     * @return string
-     */
-    private function arrayToCsvLine(array $array, $separator = ',', $enclosure = null)
-    {
-        $csvStr = "";
-
-        for( $i = 0; $i < count($array); $i++ ) {
-
-            if ($enclosure) {
-                $csvStr .= $enclosure . str_replace($enclosure, $enclosure.$enclosure, $array[$i]) . $enclosure;
-            } else {
-                $csvStr .= $array[$i];
-            }
-
-            $csvStr .= ($i < count($array) - 1) ? $separator : "\r\n" ;
-        }
-        return $csvStr;
-    }
-
-    /**
-     *
      * Move first file form array $this->files to the target location
      *
      * @param string $target
@@ -452,6 +363,8 @@ class Client
      * @param bool $allFiles delete all files in bundles cache, if false deletes only extracted files ($this->files)
      *
      * @return self
+     *
+     * @codeCoverageIgnore
      */
     public function clearCache($allFiles = false)
     {
@@ -467,12 +380,12 @@ class Client
         foreach ($files as $file) {
             $fileSystem->remove($file);
         }
+
         return $this;
     }
 
-
     /**
-     * @param \Exception $e
+     * @param SoapFault $e
      *
      * @throws Exceptions\SoapInternalErrorException
      * @throws Exceptions\SoapInvalidCredentialsException
@@ -481,43 +394,34 @@ class Client
      * @throws Exceptions\SoapUnknownErrorException
      * @throws Exceptions\SoapUserIsNotAuthorizedException
      */
-    private function parseSoapFault(\Exception $e)
+    private function parseSoapFault(SoapFault $e)
     {
-        if (isset($e->detail->AdApiFaultDetail))
-        {
+        if (isset($e->detail->AdApiFaultDetail)) {
             $error = $e->detail->AdApiFaultDetail->Errors->AdApiError;
-        } else if (isset($e->detail->ApiFaultDetail)) {
-            if (!empty($e->detail->ApiFaultDetail->BatchErrors)){
-                $error = $error =$e->detail->ApiFaultDetail->Errors->AdApiError;
+        } elseif (isset($e->detail->ApiFaultDetail)) {
+            if (!empty($e->detail->ApiFaultDetail->BatchErrors)) {
+                $error = $error = $e->detail->ApiFaultDetail->Errors->AdApiError;
             } elseif (!empty($e->detail->ApiFaultDetail->OperationErrors)) {
                 $error = $e->detail->ApiFaultDetail->OperationErrors->OperationError;
             }
         }
         $errors = is_array($error) ? $error : ['error' => $error];
         foreach ($errors as $error) {
-            switch ($error->Code)
-            {
+            switch ($error->Code) {
                 case 0:
                     throw new Exceptions\SoapInternalErrorException($error->Message, $error->Code);
-                    break;
                 case 105:
                     throw new Exceptions\SoapInvalidCredentialsException($error->Message, $error->Code);
-                    break;
                 case 106:
                     throw new Exceptions\SoapUserIsNotAuthorizedException($error->Message, $error->Code);
-                    break;
                 case 2004:
                     throw new Exceptions\SoapNoCompleteDataAvailableException($error->Message, $error->Code);
-                    break;
                 case 2100:
                     throw new Exceptions\SoapReportingServiceInvalidReportIdException($error->Message, $error->Code);
-                    break;
                 default:
-                    $errorMessage = "[{$error->ErrorCode}]\n{$error->Message}";
+                    $errorMessage = "[{$error->Code}]\n{$error->Message}";
                     throw new Exceptions\SoapUnknownErrorException($errorMessage, $error->Code);
-                    break;
             }
         }
     }
-
 }

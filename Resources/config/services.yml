@@ -1,11 +1,51 @@
+parameters:
+  bing.refresh_token: ""
+  bing.client_id: ""
+  bing.secret: ""
+  bing.redirect_uri: ""
+  bing.dev_token: ""
+
 services:
-  werkspot.bing_ads_api_client:
+  werkspot.bing_ads.api.client:
     class: Werkspot\BingAdsApiBundle\Api\Client
-    arguments: ["@werkspot.request_new_access_token"]
+    arguments:
+      - "@werkspot.bing_ads.api.guzzle.oauth_token"
+      - "@werkspot.bing_ads.api.model.api_details"
+      - "@bing.client.proxy"
+      - "@werkspot.bing_ads.api.client.helper.file"
+      - "@werkspot.bing_ads.api.client.helper.csv"
+      - "@werkspot.bing_ads.api.client.helper.time"
+
+  bing.client.proxy:
+    class: BingAds\Proxy\ClientProxy
+    arguments:
+      - ~
+
+  werkspot.bing_ads.api.client.helper.file:
+    class: Werkspot\BingAdsApiBundle\Api\Helper\File
+    arguments:
+      - "@guzzle.client"
+
+  werkspot.bing_ads.api.client.helper.csv:
+    class: Werkspot\BingAdsApiBundle\Api\Helper\Csv
+
+  werkspot.bing_ads.api.client.helper.time:
+    class: Werkspot\BingAdsApiBundle\Api\Helper\Time
 
   guzzle.client:
     class: GuzzleHttp\Client
 
-  werkspot.request_new_access_token:
-    class:  Werkspot\BingAdsApiBundle\Guzzle\RequestNewAccessToken
-    arguments: ["@guzzle.client"]
+  werkspot.bing_ads.api.guzzle.oauth_token:
+    class:  Werkspot\BingAdsApiBundle\Guzzle\OauthTokenService
+    arguments:
+      - "@guzzle.client"
+
+  werkspot.bing_ads.api.model.api_details:
+    class: Werkspot\BingAdsApiBundle\Model\ApiDetails
+    arguments:
+      - "%bing.refresh_token%"
+      - "%bing.client_id%"
+      - "%bing.secret%"
+      - "%bing.redirect_uri%"
+      - "%bing.dev_token%"
+

@@ -1,42 +1,58 @@
 <?php
-
-
 namespace Werkspot\BingAdsApiBundle\Api\Report;
 
-class BaseReport
+use BingAds\Reporting\ReportRequest;
+
+class BaseReport implements ReportInterface
 {
     const WSDL = 'https://api.bingads.microsoft.com/Api/Advertiser/Reporting/V9/ReportingService.svc?singleWsdl';
-
-    protected $reportRequest;
+    const FILE_HEADERS = 10;
+    const COLUMN_HEADERS = 1;
 
     /**
-     * {@inheritdoc}
+     * @var ReportRequest
      */
+    protected $reportRequest;
+
     public function __construct()
     {
         $this->createReportRequest();
     }
 
-    public function setFormat($format)
+    protected function createReportRequest()
     {
-        $this->reportRequest->Format = $format;
-
-        return $this;
+        $this->reportRequest = new ReportRequest();
     }
 
     /**
-     * @param bool $returnOnlyCompleteData
-     * @return $this
+     * {@inheritdoc}
+     */
+    public function setFormat($format)
+    {
+        $this->reportRequest->Format = $format;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function setReturnOnlyCompleteData($returnOnlyCompleteData)
     {
         $this->reportRequest->ReturnOnlyCompleteData = $returnOnlyCompleteData;
-
-        return $this;
     }
 
-    public function getReportLanguage($language)
+    /**
+     * {@inheritdoc}
+     */
+    public function setReportLanguage($language)
     {
         $this->reportRequest->Language = $language;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequest()
+    {
+        return $this->reportRequest;
     }
 }

@@ -30,7 +30,8 @@
     "guzzlehttp/guzzle": "~6.1"
   },
   "require-dev": {
-    "mockery/mockery": "~0.9"
+    "mockery/mockery": "~0.9",
+    "phpunit/phpunit": "^5.2"
   },
   "autoload": {
     "psr-4" : {

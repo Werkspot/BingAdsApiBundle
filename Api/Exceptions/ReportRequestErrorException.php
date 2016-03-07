@@ -1,10 +1,12 @@
 <?php
-
-
 namespace Werkspot\BingAdsApiBundle\Api\Exceptions;
 
+use Exception;
 
-class ReportRequestErrorException extends \Exception
+/**
+ * @codeCoverageIgnore
+ */
+class ReportRequestErrorException extends Exception
 {
     /**
      * @var string
@@ -12,7 +14,7 @@ class ReportRequestErrorException extends \Exception
     private $reportRequestStatus;
 
     /**
-     * @var \Exception
+     * @var string
      */
     private $reportRequestId;
 
@@ -38,7 +40,7 @@ class ReportRequestErrorException extends \Exception
     }
 
     /**
-     * @return \Exception
+     * @return string
      */
     public function getReportRequestId()
     {
