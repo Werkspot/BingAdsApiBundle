@@ -104,6 +104,6 @@ class FileTest extends PHPUnit_Framework_TestCase
     {
         $file = ASSETS_DIR . 'corrupt.zip';
         $fileHelper = new File();
-        $fileHelper->unZip($file, false);
+        $fileHelper->unZip($file, null, false);
     }
 }

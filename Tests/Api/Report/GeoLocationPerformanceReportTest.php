@@ -52,11 +52,15 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
     {
         $report = new GeoLocationPerformanceReport();
 
-        $result = $report->getRequest([], self::YESTERDAY);
+        $report->setTimePeriod(self::YESTERDAY);
+        $report->setColumns([]);
+        $result = $report->getRequest();
         $this->assertEquals(NonHourlyReportAggregation::Daily, $result->Aggregation);
 
         $report->setAggregation(NonHourlyReportAggregation::Monthly);
-        $result = $report->getRequest([], self::YESTERDAY);
+        $report->setTimePeriod(self::YESTERDAY);
+        $report->setColumns([]);
+        $result = $report->getRequest();
 
         $this->assertEquals(NonHourlyReportAggregation::Monthly, $result->Aggregation);
     }
@@ -206,14 +210,14 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
      */
     private function getRequestNewAccessTokenMock()
     {
-        $requestNewAccessTokenMock = Mockery::mock(OauthTokenService::class);
-        $requestNewAccessTokenMock
+        $oauthTokenServiceMock = Mockery::mock(OauthTokenService::class);
+        $oauthTokenServiceMock
             ->shouldReceive('refreshToken')
             ->with('clientId', 'clientSecret', 'redirectUri', AccessToken::class)
             ->once()
             ->andReturn(new AccessToken(self::ACCESS_TOKEN, self::REFRESH_TOKEN));
 
-        return $requestNewAccessTokenMock;
+        return $oauthTokenServiceMock;
     }
 
     /**

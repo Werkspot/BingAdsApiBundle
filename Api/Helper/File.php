@@ -30,19 +30,19 @@ class File
      * @param $source
      * @param null|string $destination
      *
-     * @throws \Exception
+     * @throws Exception
      *
      * @return bool|string
      */
     public function getFile($source, $destination = null)
     {
         if (preg_match('/^((https?)\:\/\/)?([a-z0-9-.]*)\.([a-z]{2,255})(\:[0-9]{2,5})?(\/([a-z0-9+$_-]\.?)+)*\/?(\?[a-z+&$_.-][a-z0-9;:@&%=+\/$_.-]*)?(#[a-z_.-][a-z0-9+$_.-]*)?$/', $source)) {
-            if (!$destination) {
-                throw new \Exception('No file destination given.');
+            if ($destination === null) {
+                throw new Exception('No file destination given.');
             }
             $destination = $this->download($source, $destination);
         } else {
-            if ($destination) {
+            if ($destination !== null) {
                 $this->filesystem->copy($source, $destination);
             } else {
                 $destination = $source;

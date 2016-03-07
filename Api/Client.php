@@ -154,7 +154,7 @@ class Client
         $this->setProxy($report::WSDL, $accessToken);
         $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}", $report);
 
-        if ($fileLocation) {
+        if ($fileLocation !== null) {
             $this->moveFirstFile($fileLocation);
 
             return $fileLocation;
@@ -201,8 +201,10 @@ class Client
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
         $zipFile = $this->fileHelper->getFile($reportDownloadUrl, $downloadFile);
-        $this->files = $this->fileHelper->unZip($zipFile);
-        $this->fixFile($report);
+        if ($zipFile !== false) {
+            $this->files = $this->fileHelper->unZip($zipFile);
+            $this->fixFile($report);
+        }
 
         return $this->files;
     }
