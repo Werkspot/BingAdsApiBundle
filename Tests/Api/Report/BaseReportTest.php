@@ -1,6 +1,5 @@
 <?php
-
-namespace Tests\Werkspot\BingAdsApiBundle\Tests\Api\Report;
+namespace Tests\Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportLanguage;

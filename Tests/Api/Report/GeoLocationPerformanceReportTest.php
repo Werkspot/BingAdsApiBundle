@@ -1,6 +1,5 @@
 <?php
-
-namespace Tests\Werkspot\BingAdsApiBundle\Tests\Api\Report;
+namespace Tests\Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Bulk\ReportTimePeriod;
 use BingAds\Proxy\ClientProxy;
@@ -11,9 +10,9 @@ use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
 use Mockery;
 use PHPUnit_Framework_TestCase;
-use Symfony\Component\Filesystem\Filesystem;
-use stdClass;
 use SoapFault;
+use stdClass;
+use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -286,6 +285,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
 
     /**
      * @param $code
+     *
      * @return SoapFault
      */
     private function generateSoapFault($code)

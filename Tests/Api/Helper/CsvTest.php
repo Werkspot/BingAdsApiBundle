@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests\Werkspot\BingAdsApiBundle\Api\Helper;
 
 use PHPUnit_Framework_TestCase;

@@ -10,12 +10,12 @@ interface ReportInterface
 
     /**
      * @param bool $returnOnlyCompleteData
-    */
+     */
     public function setReturnOnlyCompleteData($returnOnlyCompleteData);
 
     /**
-    * @param string $language (See BingAds SDK documentation)
-    */
+     * @param string $language (See BingAds SDK documentation)
+     */
     public function setReportLanguage($language);
 
     /**

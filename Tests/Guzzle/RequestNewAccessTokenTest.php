@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests\Werkspot\BingAdsApiBundle\Guzzle;
 
 use GuzzleHttp\Client;
