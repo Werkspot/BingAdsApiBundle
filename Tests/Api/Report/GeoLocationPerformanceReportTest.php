@@ -41,7 +41,9 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
         $expected->Columns = [];
 
         $report = new GeoLocationPerformanceReport();
-        $result = $report->getRequest([], self::YESTERDAY);
+        $report->setTimePeriod(self::YESTERDAY);
+        $report->setColumns([]);
+        $result = $report->getRequest();
 
         $this->assertEquals($expected, $result);
     }

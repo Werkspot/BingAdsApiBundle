@@ -11,6 +11,11 @@ class GeoLocationPerformanceReport extends BaseReport
 {
     const NAME = 'GeoLocationPerformanceReportRequest';
 
+    /**
+     * @var GeoLocationPerformanceReportRequest
+     */
+    protected $reportRequest;
+
     protected function createReportRequest()
     {
         $this->reportRequest = new GeoLocationPerformanceReportRequest();
@@ -23,25 +28,34 @@ class GeoLocationPerformanceReport extends BaseReport
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function getRequest(array $columns, $timePeriod)
-    {
-        $this->reportRequest->Time->PredefinedTime = $timePeriod;
-        $this->reportRequest->Columns = $columns;
-
-        return $this->reportRequest;
-    }
-
-    /**
      * @param string $aggregation (See BingAds SDK documentation)
-     *
-     * @return $this
      */
     public function setAggregation($aggregation)
     {
         $this->reportRequest->Aggregation = $aggregation;
+    }
 
-        return $this;
+    /**
+     * @param array $columns
+     */
+    public function setColumns(array $columns)
+    {
+        $this->reportRequest->Columns = $columns;
+    }
+
+    /**
+     * @param string $timePeriod (See BingAds SDK documentation)
+     */
+    public function setTimePeriod($timePeriod)
+    {
+        $this->reportRequest->Time->PredefinedTime = $timePeriod;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequest()
+    {
+        return $this->reportRequest;
     }
 }

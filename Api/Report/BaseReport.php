@@ -9,50 +9,14 @@ class BaseReport implements ReportInterface
     const FILE_HEADERS = 10;
     const COLUMN_HEADERS = 1;
 
+    /**
+     * @var ReportRequest
+     */
     protected $reportRequest;
 
-    /**
-     * {@inheritdoc}
-     */
     public function __construct()
     {
         $this->createReportRequest();
-    }
-
-    /**
-     * @param $format
-     *
-     * @return $this
-     */
-    public function setFormat($format)
-    {
-        $this->reportRequest->Format = $format;
-
-        return $this;
-    }
-
-    /**
-     * @param bool $returnOnlyCompleteData
-     *
-     * @return $this
-     */
-    public function setReturnOnlyCompleteData($returnOnlyCompleteData)
-    {
-        $this->reportRequest->ReturnOnlyCompleteData = $returnOnlyCompleteData;
-
-        return $this;
-    }
-
-    /**
-     * @param string $language
-     *
-     * @return $this
-     */
-    public function setReportLanguage($language)
-    {
-        $this->reportRequest->Language = $language;
-
-        return $this;
     }
 
     protected function createReportRequest()
@@ -61,12 +25,33 @@ class BaseReport implements ReportInterface
     }
 
     /**
-     * @param array|null $columns
-     * @param string|null $timePeriod (See BingAds SDK documentation)
-     *
-     * @return ReportRequest
+     * {@inheritdoc}
      */
-    public function getRequest(array $columns = null, $timePeriod = null)
+    public function setFormat($format)
+    {
+        $this->reportRequest->Format = $format;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setReturnOnlyCompleteData($returnOnlyCompleteData)
+    {
+        $this->reportRequest->ReturnOnlyCompleteData = $returnOnlyCompleteData;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setReportLanguage($language)
+    {
+        $this->reportRequest->Language = $language;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getRequest()
     {
         return $this->reportRequest;
     }

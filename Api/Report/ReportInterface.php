@@ -4,10 +4,22 @@ namespace Werkspot\BingAdsApiBundle\Api\Report;
 interface ReportInterface
 {
     /**
-     * @param array   $columns
-     * @param string  $timePeriod (See BingAds SDK documentation)
-     *
-     * @return ReportRequest
+     * @param string $format (See BingAds SDK documentation)
      */
-    public function getRequest(array $columns, $timePeriod);
+    public function setFormat($format);
+
+    /**
+     * @param bool $returnOnlyCompleteData
+    */
+    public function setReturnOnlyCompleteData($returnOnlyCompleteData);
+
+    /**
+    * @param string $language (See BingAds SDK documentation)
+    */
+    public function setReportLanguage($language);
+
+    /**
+     * @return mixed
+     */
+    public function getRequest();
 }

@@ -148,7 +148,9 @@ class Client
         $this->apiDetails->setRefreshToken($tokens->getRefreshToken());
 
         $report = $this->report[$name];
-        $reportRequest = $report->getRequest($columns, $timePeriod);
+        $report->setTimePeriod($timePeriod);
+        $report->setColumns($columns);
+        $reportRequest = $report->getRequest();
         $this->setProxy($report::WSDL, $accessToken);
         $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}", $report);
 
