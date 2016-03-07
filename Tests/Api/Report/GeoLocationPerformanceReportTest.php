@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Werkspot\BingAdsApiBundle\Tests\Api\Report;
+namespace Tests\Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Bulk\ReportTimePeriod;
 use BingAds\Proxy\ClientProxy;
