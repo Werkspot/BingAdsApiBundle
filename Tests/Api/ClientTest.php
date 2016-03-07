@@ -189,7 +189,8 @@ class ClientTest extends PHPUnit_Framework_TestCase
         $exception->detail = new stdClass();
         if ($type === 'BatchErrors') {
             $exception->detail->ApiFaultDetail = new stdClass();
-            $exception->detail->ApiFaultDetail->BatchErrors = [$error];
+            $exception->detail->ApiFaultDetail->BatchErrors = stdClass();
+            $exception->detail->ApiFaultDetail->BatchErrors->BatchError = [$error];
         } elseif ($type === 'OperationError') {
             $exception->detail->ApiFaultDetail = new stdClass();
             $exception->detail->ApiFaultDetail->OperationErrors = new stdClass();
