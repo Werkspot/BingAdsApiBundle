@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests\Werkspot\BingAdsApiBundle\Api\Report;
 
 use BingAds\Reporting\ReportFormat;

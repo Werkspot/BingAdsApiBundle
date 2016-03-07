@@ -1,5 +1,4 @@
 <?php
-
 namespace Test\Werkspot\BingAdsApiBundle\Api;
 
 use BingAds\Bulk\ReportTimePeriod;
@@ -7,6 +6,8 @@ use BingAds\Proxy\ClientProxy;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase;
+use SoapFault;
+use stdClass;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -109,8 +110,8 @@ class ClientTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @var int $code
-     * @var null|string $type
+     * @param int $code
+     * @param null|string $type
      *
      * @return MockInterface
      */
@@ -172,24 +173,30 @@ class ClientTest extends PHPUnit_Framework_TestCase
         return $apiClient;
     }
 
+    /**
+     * @param int $code
+     * @param null|string $type
+     *
+     * @return \SoapFault
+     */
     private function generateSoapFault($code, $type = null)
     {
         $message = "an error message {$code}";
-        $error = new \stdClass();
+        $error = new stdClass();
         $error->Code = $code;
         $error->Message = $message;
-        $exception = new \SoapFault('Server', '');
-        $exception->detail = new \stdClass();
+        $exception = new SoapFault('Server', '');
+        $exception->detail = new stdClass();
         if ($type === 'BatchErrors') {
-            $exception->detail->ApiFaultDetail = new \stdClass();
+            $exception->detail->ApiFaultDetail = new stdClass();
             $exception->detail->ApiFaultDetail->BatchErrors = [$error];
         } elseif ($type === 'OperationError') {
-            $exception->detail->ApiFaultDetail = new \stdClass();
-            $exception->detail->ApiFaultDetail->OperationErrors = new \stdClass();
+            $exception->detail->ApiFaultDetail = new stdClass();
+            $exception->detail->ApiFaultDetail->OperationErrors = new stdClass();
             $exception->detail->ApiFaultDetail->OperationErrors->OperationError = [$error];
         } else {
-            $exception->detail->AdApiFaultDetail = new \stdClass();
-            $exception->detail->AdApiFaultDetail->Errors = new \stdClass();
+            $exception->detail->AdApiFaultDetail = new stdClass();
+            $exception->detail->AdApiFaultDetail->Errors = new stdClass();
             $exception->detail->AdApiFaultDetail->Errors->AdApiError = [$error];
         }
 

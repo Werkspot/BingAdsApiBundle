@@ -1,6 +1,4 @@
 <?php
-
-
 namespace Tests\Werkspot\BingAdsApiBundle\Model;
 
 use PHPUnit_Framework_TestCase;
@@ -16,6 +14,5 @@ class AccessTokenTest extends PHPUnit_Framework_TestCase
         $accessToken = new AccessToken(self::ACCESS_TOKEN, self::REFRESH_TOKEN);
         $this->assertEquals(self::ACCESS_TOKEN, $accessToken->getAccessToken());
         $this->assertEquals(self::REFRESH_TOKEN, $accessToken->getRefreshToken());
-
     }
 }
