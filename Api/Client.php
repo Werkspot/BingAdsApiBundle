@@ -401,7 +401,7 @@ class Client
             $error = $e->detail->AdApiFaultDetail->Errors->AdApiError;
         } elseif (isset($e->detail->ApiFaultDetail)) {
             if (!empty($e->detail->ApiFaultDetail->BatchErrors)) {
-                $error = $error = $e->detail->ApiFaultDetail->BatchErrors->BatchErrors;
+                $error = $error = $e->detail->ApiFaultDetail->BatchErrors->BatchError;
             } elseif (!empty($e->detail->ApiFaultDetail->OperationErrors)) {
                 $error = $e->detail->ApiFaultDetail->OperationErrors->OperationError;
             }

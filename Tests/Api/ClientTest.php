@@ -73,7 +73,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
      * @param int $code
      * @param string $exceptionClassName
      */
-    public function testSoapAdApiErrorExceptions($code, $exceptionClassName)
+    public function testSoapBatchErrorExceptions($code, $exceptionClassName)
     {
         $this->expectException($exceptionClassName);
         $this->runClientSoapException($code, 'BatchErrors');
@@ -189,7 +189,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
         $exception->detail = new stdClass();
         if ($type === 'BatchErrors') {
             $exception->detail->ApiFaultDetail = new stdClass();
-            $exception->detail->ApiFaultDetail->BatchErrors = stdClass();
+            $exception->detail->ApiFaultDetail->BatchErrors = new stdClass();
             $exception->detail->ApiFaultDetail->BatchErrors->BatchError = [$error];
         } elseif ($type === 'OperationError') {
             $exception->detail->ApiFaultDetail = new stdClass();
