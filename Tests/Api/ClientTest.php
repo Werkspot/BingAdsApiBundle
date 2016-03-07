@@ -19,6 +19,29 @@ class ClientTest extends PHPUnit_Framework_TestCase
     const ACCESS_TOKEN = '2ec09aeccaf634d982eec793037e37fe';
     const REFRESH_TOKEN = '0c59f7e609b0cc467067e39d523116ce';
 
+    public function testSetApiDetails()
+    {
+        $expected = new Client(
+            new OauthTokenService(new \GuzzleHttp\Client()),
+            new ApiDetails('1', '2', '3', '4', '5'),
+            new ClientProxy('example.com'),
+            new Helper\File(),
+            new Helper\Csv(),
+            $this->getTimeHelperMock()
+        );
+
+        $api = new Client(
+            new OauthTokenService(new \GuzzleHttp\Client()),
+            new ApiDetails(null, null, null, null, null),
+            new ClientProxy('example.com'),
+            new Helper\File(),
+            new Helper\Csv(),
+            $this->getTimeHelperMock()
+        );
+        $api->setApiDetails(new ApiDetails('1', '2', '3', '4', '5'));
+        $this->assertEquals($expected, $api);
+    }
+
     /**
      * @dataProvider getTestSoapExceptionData
      *
@@ -29,6 +52,30 @@ class ClientTest extends PHPUnit_Framework_TestCase
     {
         $this->expectException($exceptionClassName);
         $this->runClientSoapException($code);
+    }
+
+    /**
+     * @dataProvider getTestSoapExceptionData
+     *
+     * @param int $code
+     * @param string $exceptionClassName
+     */
+    public function testSoapOperationErrorExceptions($code, $exceptionClassName)
+    {
+        $this->expectException($exceptionClassName);
+        $this->runClientSoapException($code, 'OperationError');
+    }
+
+    /**
+     * @dataProvider getTestSoapExceptionData
+     *
+     * @param int $code
+     * @param string $exceptionClassName
+     */
+    public function testSoapAdApiErrorExceptions($code, $exceptionClassName)
+    {
+        $this->expectException($exceptionClassName);
+        $this->runClientSoapException($code, 'BatchErrors');
     }
 
     public function getTestSoapExceptionData()
@@ -62,19 +109,17 @@ class ClientTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * @var int $code
+     * @var null|string $type
+     *
      * @return MockInterface
      */
-    private function runClientSoapException($code)
+    private function runClientSoapException($code, $type = null)
     {
-        $clientProxyMock = Mockery::mock(ClientProxy::class);
+        $clientProxyMock = $this->getClientProxyMock();
         $clientProxyMock
-            ->shouldReceive('ConstructWithCredentials')
-            ->andReturnSelf()
-            ->once()
-            ->shouldReceive('GetNamespace')
-            ->andReturn('Namespace')
             ->shouldReceive('GetService')
-            ->andThrow($this->generateSoapFault($code));
+            ->andThrow($this->generateSoapFault($code, $type));
 
         $apiClient = $this->getApiClient(
             $this->getOauthTokenServiceMock(),
@@ -127,7 +172,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
         return $apiClient;
     }
 
-    private function generateSoapFault($code)
+    private function generateSoapFault($code, $type = null)
     {
         $message = "an error message {$code}";
         $error = new \stdClass();
@@ -135,10 +180,32 @@ class ClientTest extends PHPUnit_Framework_TestCase
         $error->Message = $message;
         $exception = new \SoapFault('Server', '');
         $exception->detail = new \stdClass();
-        $exception->detail->AdApiFaultDetail = new \stdClass();
-        $exception->detail->AdApiFaultDetail->Errors = new \stdClass();
-        $exception->detail->AdApiFaultDetail->Errors->AdApiError = [$error];
+        if ($type === 'BatchErrors') {
+            $exception->detail->ApiFaultDetail = new \stdClass();
+            $exception->detail->ApiFaultDetail->BatchErrors = [$error];
+        } elseif ($type === 'OperationError') {
+            $exception->detail->ApiFaultDetail = new \stdClass();
+            $exception->detail->ApiFaultDetail->OperationErrors = new \stdClass();
+            $exception->detail->ApiFaultDetail->OperationErrors->OperationError = [$error];
+        } else {
+            $exception->detail->AdApiFaultDetail = new \stdClass();
+            $exception->detail->AdApiFaultDetail->Errors = new \stdClass();
+            $exception->detail->AdApiFaultDetail->Errors->AdApiError = [$error];
+        }
 
         return $exception;
+    }
+
+    private function getClientProxyMock()
+    {
+        $clientProxyMock = Mockery::mock(ClientProxy::class);
+        $clientProxyMock
+            ->shouldReceive('ConstructWithCredentials')
+            ->andReturnSelf()
+            ->once()
+            ->shouldReceive('GetNamespace')
+            ->andReturn('Namespace');
+
+        return $clientProxyMock;
     }
 }

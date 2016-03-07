@@ -5,6 +5,8 @@ class Time
 {
     /**
      * @param int $seconds
+     *
+     * @codeCoverageIgnore
      */
     public function sleep($seconds)
     {
