@@ -9,6 +9,7 @@ Checkout the Bing Ads full [documentation][bingDocumentation]
 
 [![Build Status](https://travis-ci.org/Werkspot/BingAdsApiBundle.svg?branch=master)](https://travis-ci.org/Werkspot/BingAdsApiBundle)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Werkspot/BingAdsApiBundle/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Werkspot/BingAdsApiBundle/?branch=master)
+[![Code Coverage](https://scrutinizer-ci.com/g/Werkspot/BingAdsApiBundle/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Werkspot/BingAdsApiBundle/?branch=master)
 
 **TODO**
 - Create more Reports
