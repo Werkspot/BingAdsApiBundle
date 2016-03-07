@@ -193,7 +193,7 @@ class Client
      *
      * @throws Exception
      *
-     * @return array
+     * @return array|string
      */
     private function getFilesFromReportRequest(ReportRequest $reportRequest, $name, $downloadFile, ReportInterface $report)
     {
@@ -396,6 +396,7 @@ class Client
      */
     private function parseSoapFault(SoapFault $e)
     {
+        $error = null;
         if (isset($e->detail->AdApiFaultDetail)) {
             $error = $e->detail->AdApiFaultDetail->Errors->AdApiError;
         } elseif (isset($e->detail->ApiFaultDetail)) {
