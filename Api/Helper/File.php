@@ -36,7 +36,7 @@ class File
      */
     public function getFile($source, $destination = null)
     {
-        if (preg_match('/^((https?)\:\/\/)?([a-z0-9-.]*)\.([a-z]{2,255})(\:[0-9]{2,5})?(\/([a-z0-9+$_-]\.?)+)*\/?(\?[a-z+&$_.-][a-z0-9;:@&%=+\/$_.-]*)?(#[a-z_.-][a-z0-9+$_.-]*)?$/', $source)) {
+        if (preg_match('/^http(s?):\/\//', $source)) {
             if ($destination === null) {
                 throw new Exception('No file destination given.');
             }
