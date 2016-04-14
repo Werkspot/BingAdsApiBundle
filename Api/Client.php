@@ -135,23 +135,16 @@ class Client
      *
      * @return array|string
      */
-    public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
+    public function getReport(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
-        $tokens = $this->oauthTokenService->refreshToken(
-            $this->apiDetails->getClientId(),
-            $this->apiDetails->getSecret(),
-            $this->apiDetails->getRedirectUri(),
-            new AccessToken(null, $this->apiDetails->getRefreshToken())
-        );
-
-        $accessToken = $tokens->getAccessToken();
-        $this->apiDetails->setRefreshToken($tokens->getRefreshToken());
+        $oauthToken = $this->getOauthToken();
+        $this->apiDetails->setRefreshToken($oauthToken->getRefreshToken());
 
         $report = $this->report[$name];
         $report->setTimePeriod($timePeriod);
         $report->setColumns($columns);
         $reportRequest = $report->getRequest();
-        $this->setProxy($report::WSDL, $accessToken);
+        $this->setProxy($report::WSDL, $oauthToken->getAccessToken());
         $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}", $report);
 
         if ($fileLocation !== null) {
@@ -161,6 +154,19 @@ class Client
         } else {
             return $files;
         }
+    }
+
+    /**
+     * @return AccessToken
+     */
+    protected function getOauthToken()
+    {
+        return  $this->oauthTokenService->refreshToken(
+            $this->apiDetails->getClientId(),
+            $this->apiDetails->getSecret(),
+            $this->apiDetails->getRedirectUri(),
+            new AccessToken(null, $this->apiDetails->getRefreshToken())
+        );
     }
 
     /**
