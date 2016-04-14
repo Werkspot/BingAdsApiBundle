@@ -43,7 +43,7 @@ class Client
     public $report;
 
     /**
-     * @var string
+     * @var string[]
      */
     private $files;
 
@@ -129,14 +129,6 @@ class Client
         $this->config['csv']['fixHeader']['removeColumnHeader'] = true; //-- fix till i know how to do this
     }
 
-    /**
-     * @param $cacheDir
-     */
-    public function setCacheDir($cacheDir)
-    {
-        $this->cacheDir = $cacheDir;
-    }
-
     public function getRefreshToken()
     {
         return $this->apiDetails->getRefreshToken();
@@ -215,6 +207,8 @@ class Client
         $zipFile = $this->fileHelper->copyFile($reportDownloadUrl, $downloadFile);
         if ($zipFile !== false) {
             $files = $this->fixFile($report, $this->fileHelper->unZip($zipFile));
+        } else {
+            $files = $zipFile;
         }
 
         return $files;
@@ -335,7 +329,7 @@ class Client
     /**
      * @param array|null $files
      *
-     * @return self
+     * @return string[]
      */
     private function fixFile(ReportInterface $report, array $files)
     {

@@ -11,7 +11,7 @@ class Csv
      * @param int $fileHeaders
      * @param int $columnHeaders
      *
-     * @return array
+     * @return string[]
      */
     public function removeHeaders(array $lines, $includingColumnHeaders = true, $fileHeaders = 10, $columnHeaders = 1)
     {
@@ -31,7 +31,7 @@ class Csv
      * @param array $lines
      * @param int   $noOfLinesToRemove
      *
-     * @return array
+     * @return string[]
      */
     public function removeLastLines(array $lines, $noOfLinesToRemove = 1)
     {
@@ -52,7 +52,7 @@ class Csv
      * @param string $separator
      * @param string $enclosure
      *
-     * @return array
+     * @return string[]
      */
     public function convertDateMDYtoYMD(array $lines, $separator = ',', $enclosure = '"')
     {
