@@ -31,7 +31,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
 
     const CSV_REPORT_PATH = 'report.csv';
 
-    const LINES_IN_REPORT = ['something', 'else'];
+    private static $LINES_IN_REPORT = ['something', 'else'];
 
     public function testGetRequest()
     {
@@ -243,11 +243,11 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
 
             ->shouldReceive('readFileLinesIntoArray')
             ->with(self::CSV_REPORT_PATH)
-            ->andReturn(self::LINES_IN_REPORT)
+            ->andReturn(self::$LINES_IN_REPORT)
             ->once()
 
             ->shouldReceive('writeLinesToFile')
-            ->with(self::LINES_IN_REPORT, self::CSV_REPORT_PATH)
+            ->with(self::$LINES_IN_REPORT, self::CSV_REPORT_PATH)
             ->once()
         ;
 
@@ -259,7 +259,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
      */
     private function getCsvHelperMock()
     {
-        $lines = self::LINES_IN_REPORT;
+        $lines = self::$LINES_IN_REPORT;
         $csvHelperMock = Mockery::mock(Helper\Csv::class);
         $csvHelperMock
             ->shouldReceive('removeHeaders')
