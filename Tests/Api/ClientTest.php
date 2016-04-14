@@ -130,7 +130,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
-        $apiClient->get([], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
+        $apiClient->getReport([], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
     }
 
     /**
