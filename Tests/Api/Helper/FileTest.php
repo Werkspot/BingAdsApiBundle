@@ -34,17 +34,17 @@ class FileTest extends PHPUnit_Framework_TestCase
         $client = new Client(['handler' => $handler]);
         $fileHelper = new File($client);
 
-        $result = $fileHelper->getFile($nonExistingFile);
+        $result = $fileHelper->copyFile($nonExistingFile);
         $this->assertFalse($result);
 
-        $result = $fileHelper->getFile($existingFile);
+        $result = $fileHelper->copyFile($existingFile);
         $this->assertEquals($existingFile, $result);
 
-        $result = $fileHelper->getFile($existingFile, $file);
+        $result = $fileHelper->copyFile($existingFile, $file);
         $this->assertEquals($file, $result);
         $this->fileSystem->remove($file);
 
-        $result = $fileHelper->getFile($onlineFile, $file);
+        $result = $fileHelper->copyFile($onlineFile, $file);
         $this->assertEquals($file, $result);
 
         $this->fileSystem->remove($file);
@@ -76,7 +76,7 @@ class FileTest extends PHPUnit_Framework_TestCase
         $url = 'http://example.com';
 
         $fileHelper = new File(new Client());
-        $fileHelper->getFile($url);
+        $fileHelper->copyFile($url);
     }
 
     public function testUnZip()

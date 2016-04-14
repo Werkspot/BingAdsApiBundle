@@ -8,6 +8,7 @@ use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase;
 use SoapFault;
 use stdClass;
+use Symfony\Component\Filesystem\Filesystem;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -22,24 +23,30 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
     public function testSetApiDetails()
     {
-        $expected = new Client(
+        $newApiDetails = new ApiDetails('1', '2', '3', '4', '5');
+
+        $expected = $this->getApiClient(
             new OauthTokenService(new \GuzzleHttp\Client()),
-            new ApiDetails('1', '2', '3', '4', '5'),
+            $newApiDetails,
             new ClientProxy('example.com'),
             new Helper\File(),
             new Helper\Csv(),
-            $this->getTimeHelperMock()
+            $this->getTimeHelperMock(),
+            new Filesystem()
         );
 
-        $api = new Client(
+        $api = $this->getApiClient(
             new OauthTokenService(new \GuzzleHttp\Client()),
             new ApiDetails(null, null, null, null, null),
             new ClientProxy('example.com'),
             new Helper\File(),
             new Helper\Csv(),
-            $this->getTimeHelperMock()
+            $this->getTimeHelperMock(),
+            new Filesystem()
         );
-        $api->setApiDetails(new ApiDetails('1', '2', '3', '4', '5'));
+
+        $this->assertNotEquals($expected, $api);
+        $api->setApiDetails($newApiDetails);
         $this->assertEquals($expected, $api);
     }
 
@@ -128,9 +135,11 @@ class ClientTest extends PHPUnit_Framework_TestCase
             $clientProxyMock,
             new Helper\File(),
             new Helper\Csv(),
-            $this->getTimeHelperMock()
+            $this->getTimeHelperMock(),
+            new Filesystem()
         );
-        $apiClient->getReport([], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
+
+        $apiClient->getReport('GeoLocationPerformanceReport', [], ReportTimePeriod::LastWeek, 'test.csv');
     }
 
     /**
@@ -158,16 +167,18 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
     /**
      * @param OauthTokenService $oauthTokenService
+     * @param ApiDetails $apiDetails
      * @param ClientProxy $clientProxy
      * @param Helper\File $fileHelper
      * @param Helper\Csv $csvHelper
      * @param Helper\Time $timeHelper
+     * @param Filesystem $filesystem
      *
      * @return Client
      */
-    private function getApiClient(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
+    private function getApiClient(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper, Filesystem $filesystem)
     {
-        $apiClient = new Client($oauthTokenService, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
+        $apiClient = new Client($oauthTokenService, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper, $filesystem);
         $apiClient->setConfig(['cache_dir' => '/tmp']);
 
         return $apiClient;

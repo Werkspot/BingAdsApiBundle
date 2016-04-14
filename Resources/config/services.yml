@@ -15,6 +15,10 @@ services:
       - "@werkspot.bing_ads.api.client.helper.file"
       - "@werkspot.bing_ads.api.client.helper.csv"
       - "@werkspot.bing_ads.api.client.helper.time"
+      - "@symfony.filesystem"
+
+  symfony.filesystem:
+    class: Symfony\Component\Filesystem\Filesystem
 
   bing.client.proxy:
     class: BingAds\Proxy\ClientProxy

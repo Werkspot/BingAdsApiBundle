@@ -34,7 +34,7 @@ class File
      *
      * @return bool|string
      */
-    public function getFile($source, $destination = null)
+    public function copyFile($source, $destination = null)
     {
         if (preg_match('/^http(s?):\/\//', $source)) {
             if ($destination === null) {
@@ -101,5 +101,25 @@ class File
         }
 
         return $files;
+    }
+
+    /**
+     * @param string $file
+     * @return string[]
+     */
+    public function readFileLinesIntoArray($file)
+    {
+        return file($file);
+    }
+
+    /**
+     * @param string[] $lines
+     * @param string $file
+     */
+    public function writeLinesToFile($lines, $file)
+    {
+        $fp = fopen($file, 'w');
+        fwrite($fp, implode('', $lines));
+        fclose($fp);
     }
 }
