@@ -74,7 +74,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock()
         );
-        $result = $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
+        $result = $apiClient->getReport(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
         $this->assertEquals([ASSETS_DIR . 'report.csv'], $result);
     }
 
@@ -88,7 +88,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock()
         );
-        $result = $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek, ASSETS_DIR . 'test.csv');
+        $result = $apiClient->getReport(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek, ASSETS_DIR . 'test.csv');
         $this->assertEquals(ASSETS_DIR . 'test.csv', $result);
 
         //--Move File back
@@ -109,7 +109,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
 
         $this->assertEquals('refreshToken', $apiClient->getRefreshToken());
 
-        $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
+        $apiClient->getReport(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
         $this->assertEquals(self::REFRESH_TOKEN, $apiClient->getRefreshToken());
     }
 
@@ -124,7 +124,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
-        $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
+        $apiClient->getReport(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
     }
 
     public function testGeoLocationPerformanceReportRequestErrorException()
@@ -138,7 +138,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
-        $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
+        $apiClient->getReport(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
     }
 
     public function testPollGenerateReportSoapException()
@@ -169,7 +169,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
-        $apiClient->get(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
+        $apiClient->getReport(['TimePeriod', 'AccountName', 'AdGroupId'], 'GeoLocationPerformanceReport');
     }
     /**
      * @return Mockery\MockInterface
