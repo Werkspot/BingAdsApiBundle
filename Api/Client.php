@@ -79,22 +79,15 @@ class Client
     private $timeHelper;
 
     /**
-     * @var Filesystem
-     */
-    private $filesystem;
-
-    /**
      * @param OauthTokenService $oauthTokenService
      * @param ApiDetails $apiDetails
      * @param ClientProxy $clientProxy
      * @param File $file
      * @param Csv $csv
      * @param Time $timeHelper
-     * @param Filesystem $fileSystem
      */
-    public function __construct(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper, Filesystem $fileSystem)
+    public function __construct(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, File $file, Csv $csv, Time $timeHelper)
     {
-        $this->filesystem = $fileSystem;
         $this->oauthTokenService = $oauthTokenService;
         $this->apiDetails = $apiDetails;
         $this->clientProxy = $clientProxy;
@@ -186,7 +179,7 @@ class Client
      */
     private function getCacheDir()
     {
-        $this->createCacheDirIfNotExists();
+        $this->fileHelper->createDirIfNotExists($this->config['cache_dir']);
 
         return $this->config['cache_dir'];
     }
@@ -415,25 +408,8 @@ class Client
      */
     private function ensureValidReportName($reportName)
     {
-       if ($reportName === '') {
-           throw new InvalidReportNameException();
-       }
-    }
-
-    /**
-     * @return Filesystem
-     */
-    private function getFileSystem()
-    {
-        return $this->filesystem;
-    }
-
-    private function createCacheDirIfNotExists()
-    {
-        $fs = $this->getFileSystem();
-
-        if (!$fs->exists($this->config['cache_dir'])) {
-            $fs->mkdir($this->config['cache_dir'], 0700);
+        if ($reportName === '' || $reportName === null) {
+            throw new InvalidReportNameException();
         }
     }
 }

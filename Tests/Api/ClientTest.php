@@ -33,8 +33,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             new ClientProxy('example.com'),
             $this->getFileHelper(),
             new Helper\Csv(),
-            $this->getTimeHelperMock(),
-            new Filesystem()
+            $this->getTimeHelperMock()
         );
 
         $api = $this->getApiClient(
@@ -43,8 +42,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             new ClientProxy('example.com'),
             $this->getFileHelper(),
             new Helper\Csv(),
-            $this->getTimeHelperMock(),
-            new Filesystem()
+            $this->getTimeHelperMock()
         );
 
         $this->assertNotEquals($expected, $api);
@@ -137,8 +135,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             $clientProxyMock,
             $this->getFileHelper(),
             new Helper\Csv(),
-            $this->getTimeHelperMock(),
-            new Filesystem()
+            $this->getTimeHelperMock()
         );
 
         $apiClient->getReport('GeoLocationPerformanceReport', [], ReportTimePeriod::LastWeek, 'test.csv');
@@ -174,13 +171,12 @@ class ClientTest extends PHPUnit_Framework_TestCase
      * @param Helper\File $fileHelper
      * @param Helper\Csv $csvHelper
      * @param Helper\Time $timeHelper
-     * @param Filesystem $filesystem
      *
      * @return Client
      */
-    private function getApiClient(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper, Filesystem $filesystem)
+    private function getApiClient(OauthTokenService $oauthTokenService, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
     {
-        $apiClient = new Client($oauthTokenService, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper, $filesystem);
+        $apiClient = new Client($oauthTokenService, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
         $apiClient->setConfig(['cache_dir' => '/tmp']);
 
         return $apiClient;

@@ -190,4 +190,11 @@ class File
     {
         $this->filesystem->rename($files[0], $target);
     }
+
+    public function createDirIfNotExists($path)
+    {
+        if (!$this->filesystem->exists($path)) {
+            $this->filesystem->mkdir($path, 0700);
+        }
+    }
 }

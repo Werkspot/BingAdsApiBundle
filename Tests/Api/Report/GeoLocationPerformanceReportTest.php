@@ -82,21 +82,13 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             ->andReturn(self::CSV_REPORT_PATH)
             ->once();
 
-        $fileSystem = $this->getFilesystemMock();
-        $fileSystem
-            ->shouldReceive('exists')
-            ->with(self::CACHE_DIR . '/' . Client::CACHE_SUBDIRECTORY)
-            ->andReturn(true)
-            ->once();
-
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $this->getClientProxyMock(),
             $fileHelperMock,
             $this->getCsvHelperMock(),
-            $this->getTimeHelperMock(),
-            $fileSystem
+            $this->getTimeHelperMock()
         );
 
         $this->assertEquals('refreshToken', $apiClient->getRefreshToken());
@@ -109,21 +101,13 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
      */
     public function testGeoLocationPerformanceReportTimeoutException()
     {
-        $fileSystem = $this->getFilesystemMock();
-        $fileSystem
-            ->shouldReceive('exists')
-            ->with(self::CACHE_DIR . '/' . Client::CACHE_SUBDIRECTORY)
-            ->andReturn(true)
-            ->once();
-
         $apiClient = $this->getApiClient(
             $this->getRequestNewAccessTokenMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $this->getClientProxyMock('Pending'),
             $this->getFileHelper(),
             new Helper\Csv(),
-            $this->getTimeHelperMock(),
-            $fileSystem
+            $this->getTimeHelperMock()
         );
         $apiClient->getReport('GeoLocationPerformanceReport', ['TimePeriod', 'AccountName', 'AdGroupId'], ReportTimePeriod::LastMonth, self::CSV_REPORT_PATH);
     }
@@ -139,10 +123,58 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getClientProxyMock('Error'),
             $this->getFileHelper(),
             new Helper\Csv(),
-            $this->getTimeHelperMock(),
-            new Filesystem()
+            $this->getTimeHelperMock()
         );
         $apiClient->getReport('GeoLocationPerformanceReport', ['TimePeriod', 'AccountName', 'AdGroupId'], ReportTimePeriod::LastMonth, self::CSV_REPORT_PATH);
+    }
+
+    public function testClearCache()
+    {
+        $fileHelperMock = Mockery::mock(Helper\File::class);
+        $fileHelperMock
+            ->shouldReceive('clearCache')
+            ->with(null)
+            ->once()
+
+            ->shouldReceive('clearCache')
+            ->withAnyArgs()
+            ->once();
+        $apiClient = $this->getApiClient(
+            $this->getRequestNewAccessTokenMock(),
+            new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
+            new ClientProxy('example.com'),
+            $fileHelperMock,
+            new Helper\Csv(),
+            new Helper\Time()
+        );
+        $apiClient->clearCache();
+        $apiClient->clearCache(true);
+    }
+
+    /**
+     * @dataProvider getReportNameData
+     *
+     * @expectedException \Werkspot\BingAdsApiBundle\Api\Exceptions\InvalidReportNameException
+     */
+    public function testThrowsExceptionOnEmptyReportName($name)
+    {
+        $apiClient = $this->getApiClient(
+            $this->getRequestNewAccessTokenMock(),
+            new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
+            new ClientProxy('example.com'),
+            $this->getFileHelper(),
+            new Helper\Csv(),
+            new Helper\Time()
+        );
+        $apiClient->getReport($name, [], ReportTimePeriod::LastMonth, self::CSV_REPORT_PATH);
+    }
+
+    public function getReportNameData()
+    {
+        return [
+            'Empty string' => [''],
+            'NULL' => [null],
+        ];
     }
 
     public function testPollGenerateReportSoapException()
@@ -171,8 +203,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $clientProxyMock,
             $this->getFileHelper(),
             new Helper\Csv(),
-            $this->getTimeHelperMock(),
-            new Filesystem()
+            $this->getTimeHelperMock()
         );
         $apiClient->getReport('GeoLocationPerformanceReport', ['TimePeriod', 'AccountName', 'AdGroupId'], ReportTimePeriod::LastMonth, self::CSV_REPORT_PATH);
     }
@@ -234,6 +265,9 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
     {
         $zipHelperMock = Mockery::mock(Helper\File::class);
         $zipHelperMock
+            ->shouldReceive('createDirIfNotExists')
+            ->once()
+
             ->shouldReceive('copyFile')
             ->andReturn('/tmp/report.zip')
             ->once()
@@ -299,13 +333,12 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
      * @param Helper\File $fileHelper
      * @param Helper\Csv $csvHelper
      * @param Helper\Time $timeHelper
-     * @param Filesystem $fileSystem
      *
      * @return Client
      */
-    private function getApiClient(OauthTokenService $requestNewAccessToken, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper, Filesystem $fileSystem)
+    private function getApiClient(OauthTokenService $requestNewAccessToken, ApiDetails $apiDetails, ClientProxy $clientProxy, Helper\File $fileHelper, Helper\Csv $csvHelper, Helper\Time $timeHelper)
     {
-        $apiClient = new Client($requestNewAccessToken, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper, $fileSystem);
+        $apiClient = new Client($requestNewAccessToken, $apiDetails, $clientProxy, $fileHelper, $csvHelper, $timeHelper);
         $apiClient->setConfig(['cache_dir' => self::CACHE_DIR]);
 
         return $apiClient;
@@ -329,14 +362,6 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
         $exception->detail->AdApiFaultDetail->Errors->AdApiError = [$error];
 
         return $exception;
-    }
-
-    /**
-     * @return Mockery\MockInterface|Filesystem
-     */
-    private function getFilesystemMock()
-    {
-        return Mockery::mock(Filesystem::class);
     }
 
     /**

@@ -37,7 +37,6 @@ class FileTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($file, $result);
 
         $fileSystem->remove($file);
-
     }
 
     /**
@@ -187,7 +186,6 @@ class FileTest extends PHPUnit_Framework_TestCase
 
         $fileHelper =  $this->getFileHelper();
         $this->assertEquals($expectedData, $fileHelper->readFileLinesIntoArray($file));
-
     }
 
     public function testWriteLinesToFile()
@@ -205,7 +203,6 @@ class FileTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($data, file($file));
 
         $this->getFileSystem()->remove($file);
-
     }
 
     /**
@@ -215,7 +212,7 @@ class FileTest extends PHPUnit_Framework_TestCase
      *
      * @return File
      */
-    private function getFileHelper(Client $client = null, Filesystem $filesystem = null, Finder $finder = null )
+    private function getFileHelper(Client $client = null, Filesystem $filesystem = null, Finder $finder = null)
     {
         $client = ($client == null) ? new Client() : $client;
         $filesystem = ($filesystem == null) ? new Filesystem() : $filesystem;
