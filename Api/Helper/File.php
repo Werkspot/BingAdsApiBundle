@@ -4,6 +4,8 @@ namespace Werkspot\BingAdsApiBundle\Api\Helper;
 use Exception;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\FileNotCopiedException;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\NoFileDestinationException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\HttpStatusCodeException;
 use ZipArchive;
@@ -36,15 +38,15 @@ class File
      * @param $source
      * @param null|string $destination
      *
-     * @throws Exception
+     * @throws NoFileDestinationException|FileNotCopiedException
      *
-     * @return bool|string
+     * @return string
      */
     public function copyFile($source, $destination = null)
     {
         if (preg_match('/^http(s?):\/\//', $source)) {
             if ($destination === null) {
-                throw new Exception('No file destination given.');
+                throw new NoFileDestinationException();
             }
             $destination = $this->download($source, $destination);
         } else {
@@ -56,12 +58,17 @@ class File
         }
 
         if (!$this->filesystem->exists($destination)) {
-            return false;
+            throw new FileNotCopiedException();
         }
 
         return $destination;
     }
 
+    /**
+     * @param string $file
+     *
+     * @return bool
+     */
     public function isHealthyZipFile($file)
     {
         $zipStatus = $this->zipArchive->open($file, ZipArchive::CHECKCONS);

@@ -8,6 +8,7 @@ use GuzzleHttp\Psr7\Response;
 use Mockery;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\NoFileDestinationException;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 
 class FileTest extends PHPUnit_Framework_TestCase
@@ -24,7 +25,6 @@ class FileTest extends PHPUnit_Framework_TestCase
 
     public function testGetFile()
     {
-        $nonExistingFile = ASSETS_DIR . 'iDoNotExist.txt';
         $existingFile = ASSETS_DIR . 'report.csv';
         $onlineFile = 'http://google.com/test.txt';
         $file = ASSETS_DIR . 'example.txt';
@@ -33,9 +33,6 @@ class FileTest extends PHPUnit_Framework_TestCase
         $handler = HandlerStack::create($mock);
         $client = new Client(['handler' => $handler]);
         $fileHelper = new File($client);
-
-        $result = $fileHelper->copyFile($nonExistingFile);
-        $this->assertFalse($result);
 
         $result = $fileHelper->copyFile($existingFile);
         $this->assertEquals($existingFile, $result);
@@ -48,6 +45,22 @@ class FileTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($file, $result);
 
         $this->fileSystem->remove($file);
+
+    }
+
+    /**
+     * @expectedException \Werkspot\BingAdsApiBundle\Api\Exceptions\FileNotCopiedException
+     */
+    public function testGetNonExistingFile()
+    {
+        $mock = new MockHandler([new Response(200, [])]);
+        $handler = HandlerStack::create($mock);
+        $client = new Client(['handler' => $handler]);
+        $fileHelper = new File($client);
+
+        $nonExistingFile = ASSETS_DIR . 'iDoNotExist.txt';
+        $result = $fileHelper->copyFile($nonExistingFile);
+        $this->assertFalse($result);
     }
 
     public function testDownload()
@@ -69,7 +82,7 @@ class FileTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Exception
+     * @expectedException \Werkspot\BingAdsApiBundle\Api\Exceptions\NoFileDestinationException
      */
     public function testDownloadThrowsException()
     {
