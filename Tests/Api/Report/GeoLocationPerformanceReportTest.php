@@ -241,6 +241,11 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             ->andReturn([self::CSV_REPORT_PATH])
             ->once()
 
+            ->shouldReceive('isHealthyZipFile')
+            ->with('/tmp/report.zip')
+            ->andReturn(true)
+            ->once()
+
             ->shouldReceive('readFileLinesIntoArray')
             ->with(self::CSV_REPORT_PATH)
             ->andReturn(self::$LINES_IN_REPORT)

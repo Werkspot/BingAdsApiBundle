@@ -79,6 +79,14 @@ class FileTest extends PHPUnit_Framework_TestCase
         $fileHelper->copyFile($url);
     }
 
+    public function testIsZipFile()
+    {
+        $fileHelper = new File(new Client());
+        $this->assertFalse($fileHelper->isHealthyZipFile(ASSETS_DIR . 'example.txt'));
+        $this->assertFalse($fileHelper->isHealthyZipFile(ASSETS_DIR . 'corrupt.zip'));
+        $this->assertTrue($fileHelper->isHealthyZipFile(ASSETS_DIR . 'report.zip'));
+    }
+
     public function testUnZip()
     {
         $file = ASSETS_DIR . 'test.zip';

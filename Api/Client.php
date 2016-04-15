@@ -204,11 +204,12 @@ class Client
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
-        $zipFile = $this->fileHelper->copyFile($reportDownloadUrl, $downloadFile);
-        if ($zipFile !== false) {
-            $files = $this->fixFile($report, $this->fileHelper->unZip($zipFile));
+        $file = $this->fileHelper->copyFile($reportDownloadUrl, $downloadFile);
+
+        if ($this->fileHelper->isHealthyZipFile($file)) {
+            $files = $this->fixFile($report, $this->fileHelper->unZip($file));
         } else {
-            $files = $zipFile;
+            $files = $file;
         }
 
         return $files;
@@ -347,7 +348,7 @@ class Client
     }
 
     /**
-     * @param array $files
+     * @param string[] $files
      * @param string $target
      */
     private function moveFirstFile(array $files, $target)

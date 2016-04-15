@@ -20,10 +20,16 @@ class File
      */
     private $filesystem;
 
+    /**
+     * @var ZipArchive
+     */
+    private $zipArchive;
+
     public function __construct(ClientInterface $guzzleClient = null)
     {
         $this->guzzleClient = $guzzleClient;
         $this->filesystem = new Filesystem();
+        $this->zipArchive = new ZipArchive();
     }
 
     /**
@@ -56,6 +62,19 @@ class File
         return $destination;
     }
 
+    public function isHealthyZipFile($file)
+    {
+        $zipStatus = $this->zipArchive->open($file, ZipArchive::CHECKCONS);
+        if ($zipStatus === ZipArchive::ER_OK || $zipStatus === true) {
+            $this->zipArchive->close();
+            $status = true;
+        } else {
+            $status = false;
+        }
+
+        return $status;
+    }
+
     /**
      * @param string $url
      * @param string $destination
@@ -85,17 +104,17 @@ class File
     public function unZip($file, $extractTo = null, $delete = true)
     {
         $zipDir = ($extractTo) ? $extractTo : dirname($file);
-        $zip = new ZipArchive();
-        if ($zip->open($file) !== true) {
+
+        if ($this->zipArchive->open($file) !== true) {
             throw new Exception("Could not open file {$file}");
         }
         $files = [];
-        for ($i = 0; $i < $zip->numFiles; ++$i) {
-            $stat = $zip->statIndex($i);
+        for ($i = 0; $i < $this->zipArchive->numFiles; ++$i) {
+            $stat = $this->zipArchive->statIndex($i);
             $files[] = "{$zipDir}/{$stat['name']}";
         }
-        $zip->extractTo($zipDir);
-        $zip->close();
+        $this->zipArchive->extractTo($zipDir);
+        $this->zipArchive->close();
         if ($delete) {
             $this->filesystem->remove($file);
         }
