@@ -13,7 +13,6 @@ Checkout the Bing Ads full [documentation][bingDocumentation]
 
 **TODO**
 - Create more Reports
-- Clean up code
 
 
 Installation
@@ -78,19 +77,23 @@ $columns = [
     'MostSpecificLocation',
 ];
 
-$bingApi = $this->get('werkspot.bing_ads_api_client');
-$bingApi->setApiDetails(
-    $refreshToken,
-    $clientId,
-    $apiSecret,
-    $redirectUri,
-    $devToken
+$apiDetails = new ApiDetails(
+    'refreshToken',
+    'clientId',
+    'secret',
+    'redirectUri',
+    'devToken'
 );
+        
+$bingApi = $this->get('werkspot.bing_ads_api_client');
+$bingApi->setApiDetails($apiDetails);
 $arrayOfFiles = $bingApi->get($columns, $reportType, $timePeriod );
 
 /* [...] Do something with the list */
 
 $bingApi->clearCache(); //-- When done remove the files
+
+$newRefreshToken = $bingApi->getRefreshToken() //-- Get new RefreshToken
 ```
 
 
