@@ -153,8 +153,9 @@ class Client
         $reportRequest = $report->getRequest();
         $this->setProxy($report::WSDL, $oauthToken->getAccessToken());
         $files = $this->getFilesFromReportRequest($reportRequest, $reportName, "{$this->getCacheDir()}/{$this->fileName}", $report);
-
-        $this->moveFirstFile($files, $fileLocation);
+        if (is_array($files)) {
+            $this->fileHelper->moveFirstFile($files, $fileLocation);
+        }
         $this->files = $files;
     }
 
@@ -348,38 +349,18 @@ class Client
         return $files;
     }
 
-    /**
-     * @param string[] $files
-     * @param string $target
-     */
-    private function moveFirstFile($files, $target)
-    {
-        $fs = $this->getFileSystem();
-        $fs->rename($files[0], $target);
-    }
 
     /**
-     * Clear Bundle Cache directory
-     *
      * @param bool $allFiles delete all files in bundles cache, if false deletes only extracted files ($this->files)
      *
      * @return self
-     *
-     * @codeCoverageIgnore
      */
     public function clearCache($allFiles = false)
     {
-        $fileSystem = $this->getFileSystem();
-
         if ($allFiles) {
-            $finder = new Finder();
-            $files = $finder->files()->in($this->config['cache_dir']);
+            $this->fileHelper->clearCache($this->config['cache_dir']);
         } else {
-            $files = $this->files;
-        }
-
-        foreach ($files as $file) {
-            $fileSystem->remove($file);
+            $this->fileHelper->clearCache($this->files);
         }
 
         return $this;

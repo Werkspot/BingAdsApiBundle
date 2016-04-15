@@ -2,3 +2,5 @@ phpunit.xml
 /composer.phar
 /vendor/
 /coverage-result/
+/coverage/
+composer.lock

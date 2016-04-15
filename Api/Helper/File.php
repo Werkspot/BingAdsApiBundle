@@ -4,6 +4,7 @@ namespace Werkspot\BingAdsApiBundle\Api\Helper;
 use Exception;
 use GuzzleHttp\ClientInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Exceptions\FileNotCopiedException;
 use Werkspot\BingAdsApiBundle\Api\Exceptions\NoFileDestinationException;
 use Werkspot\BingAdsApiBundle\Guzzle\Exceptions\CurlException;
@@ -23,14 +24,20 @@ class File
     private $filesystem;
 
     /**
+     * @var Finder
+     */
+    private $finder;
+
+    /**
      * @var ZipArchive
      */
     private $zipArchive;
 
-    public function __construct(ClientInterface $guzzleClient = null)
+    public function __construct(ClientInterface $guzzleClient, Filesystem $fileSystem, Finder $finder)
     {
         $this->guzzleClient = $guzzleClient;
-        $this->filesystem = new Filesystem();
+        $this->filesystem = $fileSystem;
+        $this->finder = $finder;
         $this->zipArchive = new ZipArchive();
     }
 
@@ -147,5 +154,40 @@ class File
         $fp = fopen($file, 'w');
         fwrite($fp, implode('', $lines));
         fclose($fp);
+    }
+
+    /**
+     * @param string|string[] $cache
+     */
+    public function clearCache($cache)
+    {
+        if (is_array($cache)) {
+            foreach ($cache as $file) {
+                $this->removeFile($file);
+            }
+        } elseif (is_dir($cache)) {
+            foreach ($this->finder->files()->in($cache) as $file) {
+                $this->removeFile($file);
+            }
+        } else {
+            $this->removeFile($cache);
+        }
+    }
+
+    /**
+     * @param string $file
+     */
+    private function removeFile($file)
+    {
+        $this->filesystem->remove($file);
+    }
+
+    /**
+     * @param string[] $files
+     * @param string $target
+     */
+    public function moveFirstFile(array $files, $target)
+    {
+        $this->filesystem->rename($files[0], $target);
     }
 }

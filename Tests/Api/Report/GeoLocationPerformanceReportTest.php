@@ -8,11 +8,13 @@ use BingAds\Reporting\GeoLocationPerformanceReportRequest;
 use BingAds\Reporting\NonHourlyReportAggregation;
 use BingAds\Reporting\ReportFormat;
 use BingAds\Reporting\ReportTime;
+use GuzzleHttp\Client as GuzzleClient;
 use Mockery;
 use PHPUnit_Framework_TestCase;
 use SoapFault;
 use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -74,16 +76,16 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
     {
         $fileLocation = 'test.csv';
 
-        $fileSystem = $this->getFilesystemMock();
+        $fileHelperMock = $this->getFileHelperMock();
+        $fileHelperMock->shouldReceive('moveFirstFile')
+            ->with([self::CSV_REPORT_PATH], $fileLocation)
+            ->andReturn(self::CSV_REPORT_PATH)
+            ->once();
 
+        $fileSystem = $this->getFilesystemMock();
         $fileSystem
             ->shouldReceive('exists')
             ->with(self::CACHE_DIR . '/' . Client::CACHE_SUBDIRECTORY)
-            ->andReturn(true)
-            ->once()
-
-            ->shouldReceive('rename')
-            ->with(self::CSV_REPORT_PATH, $fileLocation)
             ->andReturn(true)
             ->once();
 
@@ -91,7 +93,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getRequestNewAccessTokenMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $this->getClientProxyMock(),
-            $this->getFileHelperMock(),
+            $fileHelperMock,
             $this->getCsvHelperMock(),
             $this->getTimeHelperMock(),
             $fileSystem
@@ -118,7 +120,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getRequestNewAccessTokenMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $this->getClientProxyMock('Pending'),
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock(),
             $fileSystem
@@ -135,7 +137,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getRequestNewAccessTokenMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $this->getClientProxyMock('Error'),
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock(),
             new Filesystem()
@@ -167,7 +169,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
             $this->getRequestNewAccessTokenMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $clientProxyMock,
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock(),
             new Filesystem()
@@ -253,8 +255,7 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
 
             ->shouldReceive('writeLinesToFile')
             ->with(self::$LINES_IN_REPORT, self::CSV_REPORT_PATH)
-            ->once()
-        ;
+            ->once();
 
         return $zipHelperMock;
     }
@@ -336,5 +337,13 @@ class GeoLocationPerformanceReportTest extends PHPUnit_Framework_TestCase
     private function getFilesystemMock()
     {
         return Mockery::mock(Filesystem::class);
+    }
+
+    /**
+     * @return Helper\File
+     */
+    private function getFileHelper()
+    {
+        return  new Helper\File(new GuzzleClient(), new Filesystem(), new Finder());
     }
 }

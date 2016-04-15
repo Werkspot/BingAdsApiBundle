@@ -3,12 +3,14 @@ namespace Test\Werkspot\BingAdsApiBundle\Api;
 
 use BingAds\Bulk\ReportTimePeriod;
 use BingAds\Proxy\ClientProxy;
+use GuzzleHttp\Client as GuzzleClient;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase;
 use SoapFault;
 use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -29,7 +31,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             new OauthTokenService(new \GuzzleHttp\Client()),
             $newApiDetails,
             new ClientProxy('example.com'),
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock(),
             new Filesystem()
@@ -39,7 +41,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             new OauthTokenService(new \GuzzleHttp\Client()),
             new ApiDetails(null, null, null, null, null),
             new ClientProxy('example.com'),
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock(),
             new Filesystem()
@@ -133,7 +135,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
             $this->getOauthTokenServiceMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $clientProxyMock,
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock(),
             new Filesystem()
@@ -226,5 +228,13 @@ class ClientTest extends PHPUnit_Framework_TestCase
             ->andReturn('Namespace');
 
         return $clientProxyMock;
+    }
+
+    /**
+     * @return Helper\File
+     */
+    private function getFileHelper()
+    {
+        return  new Helper\File(new GuzzleClient(), new Filesystem(), new Finder());
     }
 }
