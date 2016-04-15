@@ -27,6 +27,7 @@ class Client
      * @var array
      */
     private $config = [];
+
     /**
      * @var string
      */
@@ -43,7 +44,7 @@ class Client
     public $report;
 
     /**
-     * @var string[]
+     * @var string|string[]
      */
     private $files;
 
@@ -351,7 +352,7 @@ class Client
      * @param string[] $files
      * @param string $target
      */
-    private function moveFirstFile(array $files, $target)
+    private function moveFirstFile($files, $target)
     {
         $fs = $this->getFileSystem();
         $fs->rename($files[0], $target);
