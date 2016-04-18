@@ -9,7 +9,6 @@ use Mockery;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Werkspot\BingAdsApiBundle\Api\Exceptions\NoFileDestinationException;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 
 class FileTest extends PHPUnit_Framework_TestCase

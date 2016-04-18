@@ -15,10 +15,12 @@ services:
       - "@werkspot.bing_ads.api.client.helper.file"
       - "@werkspot.bing_ads.api.client.helper.csv"
       - "@werkspot.bing_ads.api.client.helper.time"
-      - "@symfony.filesystem"
 
   symfony.filesystem:
     class: Symfony\Component\Filesystem\Filesystem
+
+  symfony.finder:
+    class: Symfony\Component\Finder\Finder
 
   bing.client.proxy:
     class: BingAds\Proxy\ClientProxy
@@ -29,6 +31,9 @@ services:
     class: Werkspot\BingAdsApiBundle\Api\Helper\File
     arguments:
       - "@guzzle.client"
+      - "@symfony.filesystem"
+      - "@symfony.finder"
+
 
   werkspot.bing_ads.api.client.helper.csv:
     class: Werkspot\BingAdsApiBundle\Api\Helper\Csv

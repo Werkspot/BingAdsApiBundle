@@ -9,8 +9,6 @@ use BingAds\Reporting\SubmitGenerateReportRequest;
 use Exception;
 use SoapFault;
 use SoapVar;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Exceptions\InvalidReportNameException;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
