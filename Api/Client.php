@@ -9,8 +9,7 @@ use BingAds\Reporting\SubmitGenerateReportRequest;
 use Exception;
 use SoapFault;
 use SoapVar;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
+use Werkspot\BingAdsApiBundle\Api\Exceptions\InvalidReportNameException;
 use Werkspot\BingAdsApiBundle\Api\Helper\Csv;
 use Werkspot\BingAdsApiBundle\Api\Helper\File;
 use Werkspot\BingAdsApiBundle\Api\Helper\Time;
@@ -21,6 +20,7 @@ use Werkspot\BingAdsApiBundle\Model\ApiDetails;
 
 class Client
 {
+    const CACHE_SUBDIRECTORY = 'BingAdsApiBundle';
     /**
      * @var array
      */
@@ -42,7 +42,7 @@ class Client
     public $report;
 
     /**
-     * @var string
+     * @var string[]
      */
     private $files;
 
@@ -77,8 +77,6 @@ class Client
     private $timeHelper;
 
     /**
-     * Client constructor.
-     *
      * @param OauthTokenService $oauthTokenService
      * @param ApiDetails $apiDetails
      * @param ClientProxy $clientProxy
@@ -117,8 +115,9 @@ class Client
      */
     public function setConfig($config)
     {
+        //TODO: make this specific setter
         $this->config = $config;
-        $this->config['cache_dir'] = $this->config['cache_dir'] . '/' . 'BingAdsApiBundle'; //<-- important for the cache clear function
+        $this->config['cache_dir'] = $this->config['cache_dir'] . '/' . self::CACHE_SUBDIRECTORY; //<-- important for the cache clear function
         $this->config['csv']['fixHeader']['removeColumnHeader'] = true; //-- fix till i know how to do this
     }
 
@@ -128,39 +127,40 @@ class Client
     }
 
     /**
+     * @param string $reportName
      * @param array $columns
-     * @param string $name
      * @param $timePeriod
      * @param null|string $fileLocation
-     *
-     * @return array|string
      */
-    public function get(array $columns, $name = 'GeoLocationPerformanceReport', $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
+    public function getReport($reportName, array $columns, $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
-        $tokens = $this->oauthTokenService->refreshToken(
+        $this->ensureValidReportName($reportName);
+        $oauthToken = $this->getOauthToken();
+        $this->apiDetails->setRefreshToken($oauthToken->getRefreshToken());
+
+        $report = $this->report[$reportName];
+        $report->setTimePeriod($timePeriod);
+        $report->setColumns($columns);
+        $reportRequest = $report->getRequest();
+        $this->setProxy($report::WSDL, $oauthToken->getAccessToken());
+        $files = $this->getFilesFromReportRequest($reportRequest, $reportName, "{$this->getCacheDir()}/{$this->fileName}", $report);
+        if ($fileLocation !== null) {
+            $this->fileHelper->moveFirstFile($files, $fileLocation);
+        }
+        $this->files = $files;
+    }
+
+    /**
+     * @return AccessToken
+     */
+    protected function getOauthToken()
+    {
+        return  $this->oauthTokenService->refreshToken(
             $this->apiDetails->getClientId(),
             $this->apiDetails->getSecret(),
             $this->apiDetails->getRedirectUri(),
             new AccessToken(null, $this->apiDetails->getRefreshToken())
         );
-
-        $accessToken = $tokens->getAccessToken();
-        $this->apiDetails->setRefreshToken($tokens->getRefreshToken());
-
-        $report = $this->report[$name];
-        $report->setTimePeriod($timePeriod);
-        $report->setColumns($columns);
-        $reportRequest = $report->getRequest();
-        $this->setProxy($report::WSDL, $accessToken);
-        $files = $this->getFilesFromReportRequest($reportRequest, $name, "{$this->getCacheDir()}/{$this->fileName}", $report);
-
-        if ($fileLocation !== null) {
-            $this->moveFirstFile($fileLocation);
-
-            return $fileLocation;
-        } else {
-            return $files;
-        }
     }
 
     /**
@@ -177,10 +177,7 @@ class Client
      */
     private function getCacheDir()
     {
-        $fs = new Filesystem();
-        if (!$fs->exists($this->config['cache_dir'])) {
-            $fs->mkdir($this->config['cache_dir'], 0700);
-        }
+        $this->fileHelper->createDirIfNotExists($this->config['cache_dir']);
 
         return $this->config['cache_dir'];
     }
@@ -193,20 +190,22 @@ class Client
      *
      * @throws Exception
      *
-     * @return array|string
+     * @return string[]
      */
     private function getFilesFromReportRequest(ReportRequest $reportRequest, $name, $downloadFile, ReportInterface $report)
     {
         $reportRequestId = $this->submitGenerateReport($reportRequest, $name);
         $reportRequestStatus = $this->waitForStatus($reportRequestId);
         $reportDownloadUrl = $reportRequestStatus->ReportDownloadUrl;
-        $zipFile = $this->fileHelper->getFile($reportDownloadUrl, $downloadFile);
-        if ($zipFile !== false) {
-            $this->files = $this->fileHelper->unZip($zipFile);
-            $this->fixFile($report);
+        $file = $this->fileHelper->copyFile($reportDownloadUrl, $downloadFile);
+
+        if ($this->fileHelper->isHealthyZipFile($file)) {
+            $files = $this->fixFile($report, $this->fileHelper->unZip($file));
+        } else {
+            $files = [$file];
         }
 
-        return $this->files;
+        return $files;
     }
 
     /**
@@ -324,61 +323,35 @@ class Client
     /**
      * @param array|null $files
      *
-     * @return self
+     * @return string[]
      */
-    private function fixFile(ReportInterface $report, array $files = null)
+    private function fixFile(ReportInterface $report, array $files)
     {
-        $files = (!$files) ? $this->files : $files;
         foreach ($files as $file) {
-            $lines = file($file);
+            $lines = $this->fileHelper->readFileLinesIntoArray($file);
+
             $lines = $this->csvHelper->removeHeaders($lines, $this->config['csv']['fixHeader']['removeColumnHeader'], $report::FILE_HEADERS, $report::COLUMN_HEADERS);
             $lines = $this->csvHelper->removeLastLines($lines);
             $lines = $this->csvHelper->convertDateMDYtoYMD($lines);
-            $fp = fopen($file, 'w');
-            fwrite($fp, implode('', $lines));
-            fclose($fp);
+
+            $this->fileHelper->writeLinesToFile($lines, $file);
         }
 
-        return $this;
+        return $files;
     }
 
-    /**
-     * Move first file form array $this->files to the target location
-     *
-     * @param string $target
-     *
-     * @return self
-     */
-    private function moveFirstFile($target)
-    {
-        $fs = new Filesystem();
-        $fs->rename($this->files[0], $target);
-
-        return $this;
-    }
 
     /**
-     * Clear Bundle Cache directory
-     *
      * @param bool $allFiles delete all files in bundles cache, if false deletes only extracted files ($this->files)
      *
      * @return self
-     *
-     * @codeCoverageIgnore
      */
     public function clearCache($allFiles = false)
     {
-        $fileSystem = new Filesystem();
-
         if ($allFiles) {
-            $finder = new Finder();
-            $files = $finder->files()->in($this->config['cache_dir']);
+            $this->fileHelper->clearCache($this->config['cache_dir']);
         } else {
-            $files = $this->files;
-        }
-
-        foreach ($files as $file) {
-            $fileSystem->remove($file);
+            $this->fileHelper->clearCache($this->files);
         }
 
         return $this;
@@ -423,6 +396,18 @@ class Client
                     $errorMessage = "[{$error->Code}]\n{$error->Message}";
                     throw new Exceptions\SoapUnknownErrorException($errorMessage, $error->Code);
             }
+        }
+    }
+
+    /**
+     * @param $reportName
+     *
+     * @throws InvalidReportNameException
+     */
+    private function ensureValidReportName($reportName)
+    {
+        if ($reportName === '' || $reportName === null) {
+            throw new InvalidReportNameException();
         }
     }
 }

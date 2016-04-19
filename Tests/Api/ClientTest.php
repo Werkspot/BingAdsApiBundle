@@ -3,11 +3,14 @@ namespace Test\Werkspot\BingAdsApiBundle\Api;
 
 use BingAds\Bulk\ReportTimePeriod;
 use BingAds\Proxy\ClientProxy;
+use GuzzleHttp\Client as GuzzleClient;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit_Framework_TestCase;
 use SoapFault;
 use stdClass;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Werkspot\BingAdsApiBundle\Api\Client;
 use Werkspot\BingAdsApiBundle\Api\Exceptions;
 use Werkspot\BingAdsApiBundle\Api\Helper;
@@ -22,24 +25,28 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
     public function testSetApiDetails()
     {
-        $expected = new Client(
+        $newApiDetails = new ApiDetails('1', '2', '3', '4', '5');
+
+        $expected = $this->getApiClient(
             new OauthTokenService(new \GuzzleHttp\Client()),
-            new ApiDetails('1', '2', '3', '4', '5'),
+            $newApiDetails,
             new ClientProxy('example.com'),
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
 
-        $api = new Client(
+        $api = $this->getApiClient(
             new OauthTokenService(new \GuzzleHttp\Client()),
             new ApiDetails(null, null, null, null, null),
             new ClientProxy('example.com'),
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
-        $api->setApiDetails(new ApiDetails('1', '2', '3', '4', '5'));
+
+        $this->assertNotEquals($expected, $api);
+        $api->setApiDetails($newApiDetails);
         $this->assertEquals($expected, $api);
     }
 
@@ -126,11 +133,12 @@ class ClientTest extends PHPUnit_Framework_TestCase
             $this->getOauthTokenServiceMock(),
             new ApiDetails('refreshToken', 'clientId', 'clientSecret', 'redirectUri', 'devToken'),
             $clientProxyMock,
-            new Helper\File(),
+            $this->getFileHelper(),
             new Helper\Csv(),
             $this->getTimeHelperMock()
         );
-        $apiClient->get([], 'GeoLocationPerformanceReport', ReportTimePeriod::LastWeek);
+
+        $apiClient->getReport('GeoLocationPerformanceReport', [], ReportTimePeriod::LastWeek, 'test.csv');
     }
 
     /**
@@ -158,6 +166,7 @@ class ClientTest extends PHPUnit_Framework_TestCase
 
     /**
      * @param OauthTokenService $oauthTokenService
+     * @param ApiDetails $apiDetails
      * @param ClientProxy $clientProxy
      * @param Helper\File $fileHelper
      * @param Helper\Csv $csvHelper
@@ -215,5 +224,13 @@ class ClientTest extends PHPUnit_Framework_TestCase
             ->andReturn('Namespace');
 
         return $clientProxyMock;
+    }
+
+    /**
+     * @return Helper\File
+     */
+    private function getFileHelper()
+    {
+        return  new Helper\File(new GuzzleClient(), new Filesystem(), new Finder());
     }
 }
