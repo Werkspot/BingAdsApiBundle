@@ -132,7 +132,7 @@ class Client
      * @param $timePeriod
      * @param null|string $fileLocation
      */
-    public function getReport($reportName, array $columns, $timePeriod = ReportTimePeriod::LastWeek, $fileLocation)
+    public function getReport($reportName, array $columns, $timePeriod = ReportTimePeriod::LastWeek, $fileLocation = null)
     {
         $this->ensureValidReportName($reportName);
         $oauthToken = $this->getOauthToken();
@@ -144,7 +144,7 @@ class Client
         $reportRequest = $report->getRequest();
         $this->setProxy($report::WSDL, $oauthToken->getAccessToken());
         $files = $this->getFilesFromReportRequest($reportRequest, $reportName, "{$this->getCacheDir()}/{$this->fileName}", $report);
-        if (is_array($files)) {
+        if ($fileLocation !== null) {
             $this->fileHelper->moveFirstFile($files, $fileLocation);
         }
         $this->files = $files;
@@ -202,7 +202,7 @@ class Client
         if ($this->fileHelper->isHealthyZipFile($file)) {
             $files = $this->fixFile($report, $this->fileHelper->unZip($file));
         } else {
-            $files = $file;
+            $files = [$file];
         }
 
         return $files;
