@@ -42,7 +42,7 @@ class Client
     public $report;
 
     /**
-     * @var string|string[]
+     * @var string[]
      */
     private $files;
 
@@ -190,7 +190,7 @@ class Client
      *
      * @throws Exception
      *
-     * @return array|string
+     * @return string[]
      */
     private function getFilesFromReportRequest(ReportRequest $reportRequest, $name, $downloadFile, ReportInterface $report)
     {
